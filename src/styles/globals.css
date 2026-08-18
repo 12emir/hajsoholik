@@ -1,0 +1,183 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/inter/wght-italic.css";
+
+/*
+ * Hajsoholik design tokens — port wzorcowego UI (Hajsoholik-Listing-Promocji-Bankowych.html).
+ * Paleta: zieleń #00C26E (premia/CTAs), fiolet #6C5CE7 (filtry/akcenty), bursztyn #FFB800
+ * (haczyki/ostrzeżenia), tło #F8F9FC, tekst zinc-900, font Inter.
+ */
+
+:root {
+  --hj-green: #00c26e;
+  --hj-green-dark: #00b363;
+  --hj-green-deep: #007b46;
+  --hj-green-soft: rgba(0, 194, 110, 0.15);
+  --hj-green-bg: rgba(0, 194, 110, 0.1);
+  --hj-purple: #6c5ce7;
+  --hj-purple-deep: #5a4bd6;
+  --hj-purple-soft: rgba(108, 92, 231, 0.1);
+  --hj-amber: #ffb800;
+  --hj-amber-soft: #fff4d6;
+  --hj-bg: #f8f9fc;
+  --hj-card: #ffffff;
+  --hj-border: #f1f1f3;
+  --hj-border-strong: #e4e4e7;
+  --hj-text: #18181b;
+  --hj-muted: #71717a;
+  --hj-muted-strong: #52525b;
+  --hj-red: #dc2626;
+  --hj-red-deep: #b91c1c;
+  --hj-red-soft: #fee2e2;
+  --hj-red-bg: #fef2f2;
+  --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+@theme inline {
+  --color-hj-green: var(--hj-green);
+  --color-hj-green-dark: var(--hj-green-dark);
+  --color-hj-green-soft: var(--hj-green-soft);
+  --color-hj-green-bg: var(--hj-green-bg);
+  --color-hj-purple: var(--hj-purple);
+  --color-hj-purple-soft: var(--hj-purple-soft);
+  --color-hj-amber: var(--hj-amber);
+  --color-hj-amber-soft: var(--hj-amber-soft);
+  --color-hj-bg: var(--hj-bg);
+  --color-hj-card: var(--hj-card);
+  --color-hj-border: var(--hj-border);
+  --color-hj-border-strong: var(--hj-border-strong);
+  --color-hj-text: var(--hj-text);
+  --color-hj-muted: var(--hj-muted);
+  --color-hj-muted-strong: var(--hj-muted-strong);
+  --color-hj-red: var(--hj-red);
+  --color-hj-red-soft: var(--hj-red-soft);
+  --color-hj-red-bg: var(--hj-red-bg);
+  --font-sans: var(--font-sans);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--hj-bg);
+    color: var(--hj-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--hj-green);
+    color: #ffffff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--hj-purple);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Micro mono label — sygnatura artifactu (10-12px, uppercase, tracking) */
+  .micro-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--hj-muted);
+  }
+
+  /* Card — biała, zaokrąglona 16px, subtelny cień */
+  .hj-card {
+    background: var(--hj-card);
+    border: 1px solid var(--hj-border);
+    border-radius: 16px;
+  }
+
+  .hj-card-shadow {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  }
+
+  .hj-card-hover {
+    transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
+  }
+
+  .hj-card-hover:hover {
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.1);
+    border-color: var(--hj-border-strong);
+  }
+
+  .hj-chip {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--hj-bg);
+    border: 1px solid var(--hj-border);
+    font-weight: 600;
+  }
+
+  .hj-chip-green {
+    background: var(--hj-green-bg);
+    color: var(--hj-green);
+  }
+
+  .hj-chip-purple {
+    background: var(--hj-purple-soft);
+    color: var(--hj-purple);
+  }
+
+  .hj-chip-amber {
+    background: var(--hj-amber-soft);
+    color: #b45309;
+  }
+
+  .hj-chip-red {
+    background: var(--hj-red-bg);
+    color: var(--hj-red);
+  }
+
+  /* Progress bar */
+  .hj-progress-track {
+    height: 6px;
+    background: var(--hj-border);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .hj-progress-fill {
+    height: 100%;
+    background: var(--hj-green);
+    border-radius: 999px;
+    transition: width 300ms ease;
+  }
+}
+
+/* Toast — slide-in (reduced motion handled globally) */
+@keyframes hj-toast-in {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.hj-toast-enter {
+  animation: hj-toast-in 200ms ease-out;
+}

@@ -1,0 +1,24 @@
+{
+  "name": "Hajsoholik — promocje bankowe",
+  "short_name": "Hajsoholik",
+  "description": "Promocje bankowe 2026: premie za konto, karty, lokaty i cashback.",
+  "lang": "pl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F9FC",
+  "theme_color": "#F8F9FC",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

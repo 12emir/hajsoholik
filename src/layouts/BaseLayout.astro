@@ -1,0 +1,137 @@
+---
+import '../styles/globals.css'
+import interWoff2 from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url'
+import CookieBanner from '../components/CookieBanner.astro'
+import Footer from '../components/Footer.astro'
+import SiteHeader from '../components/SiteHeader.astro'
+import { site } from '../data/site'
+
+interface Props {
+  /** Page title (SEO). */
+  title: string
+  /** Page meta description (SEO). */
+  description?: string
+  /** Canonical path without origin, e.g. `/`. */
+  path: string
+  /** Absolute OG image path. */
+  ogImage?: string
+  /** JSON-LD blocks injected as `application/ld+json`. */
+  jsonLd?: string[]
+  /** Override body classes. */
+  bodyClass?: string
+  /** Hide header/footer chrome (e.g. 404). */
+  bare?: boolean
+  /** OG type — `website` default, `product` for promotion pages. */
+  ogType?: string
+  /** Emit `noindex` (e.g. archived offers). */
+  noindex?: boolean
+  /** Emit datePublished/dateModified/og:updated_time on content pages only. */
+  showFreshness?: boolean
+}
+
+const {
+  title,
+  description,
+  path,
+  ogImage = site.ogImage,
+  jsonLd = [],
+  bodyClass = '',
+  bare = false,
+  ogType = 'website',
+  noindex = false,
+  showFreshness = false,
+} = Astro.props
+
+const base = Astro.site ?? new URL(site.url)
+// Root bez trailing slash — spójne z sitemap (trailingSlash: 'never').
+const canonical = path === '/' ? site.url : new URL(path, base).toString()
+const ogUrl = new URL(ogImage, base).toString()
+
+const structuredData = [
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: site.name,
+    url: site.url,
+    inLanguage: 'pl-PL',
+    description: site.description,
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: site.name,
+    url: site.url,
+    description: site.description,
+    inLanguage: 'pl-PL',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      url: `${site.url}/kontakt`,
+      availableLanguage: 'pl',
+    },
+  }),
+  ...jsonLd,
+]
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description ?? site.description} />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#F8F9FC" />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'} />
+    <meta name="author" content="Redakcja Hajsoholik" />
+    {showFreshness && (
+      <>
+        <meta name="datePublished" content={site.publishedAt} />
+        <meta name="dateModified" content={site.updatedAt} />
+      </>
+    )}
+
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="pl" href={canonical} />
+    <link rel="alternate" hreflang="x-default" href={canonical} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description ?? site.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:locale" content="pl_PL" />
+    {showFreshness && <meta property="og:updated_time" content={site.updatedAt} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description ?? site.description} />
+    <meta name="twitter:image" content={ogUrl} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+
+    <link rel="preload" as="font" type="font/woff2" href={interWoff2} crossorigin />
+
+    {structuredData.map((block) => <script type="application/ld+json" is:inline set:html={block} />)}
+  </head>
+  <body class={`min-h-screen bg-hj-bg text-hj-text antialiased ${bodyClass}`}>
+    {!bare && <SiteHeader currentPath={path} />}
+    {!bare && (
+      <main id="main-content" class="min-h-[70vh]">
+        <slot />
+      </main>
+    )}
+    {bare && (
+      <div class="min-h-[70vh]">
+        <slot />
+      </div>
+    )}
+    {!bare && <Footer currentPath={path} />}
+    {!bare && <CookieBanner />}
+  </body>
+</html>

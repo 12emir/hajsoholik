@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const path = '/regulamin'
+const title = 'Regulamin — Hajsoholik'
+const description =
+  'Regulamin korzystania z serwisu Hajsoholik.pl — zasady, odpowiedzialność, zastrzeżenia, polityka korekt i zgłaszania błędów.'
+---
+
+<BaseLayout title={title} description={description} path={path}>
+  <div class="max-w-3xl mx-auto px-4 md:px-6 py-10 md:py-14">
+    <p class="text-[12px] font-bold tracking-widest text-hj-muted uppercase mb-2">Regulamin</p>
+    <h1 class="font-black text-[28px] leading-tight mb-2">Zasady korzystania z Hajsoholik.pl</h1>
+    <p class="text-[13px] text-hj-muted mb-6">Stan dokumentu: 2026-08-14</p>
+
+    <div class="space-y-6 text-hj-muted-strong text-[15px] leading-relaxed">
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">1. Operator serwisu</h2>
+        <p>
+          Operatorem serwisu Hajsoholik.pl jest <strong>Zordon Intelligence Sp. z o.o.</strong>
+          (KRS 0001190915, NIP 7252358503, REGON 542545843, Łódź, Polska),
+          e-mail: kontakt@hajsoholik.pl.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">2. Charakter serwisu</h2>
+        <p>
+          Hajsoholik.pl to serwis informacyjny agregujący promocje bankowe. Dane prezentowane na
+          stronie mają charakter poglądowy i mogą być nieaktualne. Przed skorzystaniem z promocji
+          zawsze weryfikuj warunki bezpośrednio u organizatora (banku) — linki do regulaminów
+          znajdują się na stronie każdej promocji.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">3. Brak porad finansowych</h2>
+        <p>
+          Treści w serwisie nie stanowią porady finansowej, prawnej ani inwestycyjnej. Decyzje o
+          skorzystaniu z ofert podejmujesz samodzielnie i na własną odpowiedzialność.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">4. Linki afiliacyjne</h2>
+        <p>
+          Część linków do banków to linki afiliacyjne — jeżeli skorzystasz z oferty przez taki
+          link, serwis może otrzymać prowizję. Nie wpływa to na treść ani kolejność prezentacji
+          ofert.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">5. Odpowiedzialność</h2>
+        <p>
+          Operator serwisu nie ponosi odpowiedzialności za szkody wynikające z korzystania z
+          prezentowanych promocji ani za rozbieżności między opisem a faktycznymi warunkami
+          oferty banku. Treści podlegają ochronie prawa autorskiego; kopiowanie i dalsza
+          publikacja bez zgody operatora jest zabroniona.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">6. Zgłaszanie błędów i polityka korekt</h2>
+        <p>
+          Zależy nam na aktualności danych. Jeżeli zauważysz nieprawidłowości — nieaktualny termin,
+          błędną kwotę premii, zmianę warunków — zgłoś to na kontakt@hajsoholik.pl lub przez
+          stronę <a href="/kontakt" class="underline">kontakt</a>. Opisujemy sposób weryfikacji
+          każdej oferty (data weryfikacji regulaminu znajduje się na stronie promocji), a potwierdzone
+          błędy poprawiamy z reguły w ciągu 24–48 godzin od zgłoszenia. W przypadku istotnych
+          rozbieżności opatrujemy ofertę adnotacją korygującą.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">7. Postanowienia końcowe</h2>
+        <p>
+          Regulamin może ulegać zmianie; aktualna wersja obowiązuje od dnia publikacji na tej
+          stronie. W sprawach nieuregulowanych zastosowanie mają przepisy prawa polskiego.
+          Reklamacje dotyczące działania serwisu można składać na kontakt@hajsoholik.pl.
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

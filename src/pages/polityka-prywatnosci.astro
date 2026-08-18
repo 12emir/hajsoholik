@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const path = '/polityka-prywatnosci'
+const title = 'Polityka prywatności — Hajsoholik'
+const description =
+  'Polityka prywatności serwisu Hajsoholik.pl — administrator danych, zakres przetwarzania, cookies, Twoje prawa (RODO).'
+---
+
+<BaseLayout title={title} description={description} path={path}>
+  <div class="max-w-3xl mx-auto px-4 md:px-6 py-10 md:py-14">
+    <p class="text-[12px] font-bold tracking-widest text-hj-muted uppercase mb-2">Polityka prywatności</p>
+    <h1 class="font-black text-[28px] leading-tight mb-2">Jak Hajsoholik.pl chroni Twoje dane</h1>
+    <p class="text-[13px] text-hj-muted mb-6">Stan dokumentu: 2026-08-14</p>
+
+    <div class="space-y-6 text-hj-muted-strong text-[15px] leading-relaxed">
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">1. Administrator danych</h2>
+        <p>
+          Administratorem danych osobowych w rozumieniu Rozporządzenia Parlamentu Europejskiego i Rady
+          (UE) 2016/679 z dnia 27 kwietnia 2016 r. („RODO") jest operator serwisu Hajsoholik.pl:
+        </p>
+        <p class="mt-3 p-4 bg-[#F8F9FC] border border-zinc-100 rounded-[12px]">
+          <strong>Zordon Intelligence Sp. z o.o.</strong><br />
+          KRS 0001190915 • NIP 7252358503 • REGON 542545843<br />
+          Łódź, Polska<br />
+          E-mail: kontakt@hajsoholik.pl
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">2. Zakres przetwarzanych danych</h2>
+        <p>
+          Serwis nie wymaga zakładania konta. Postęp wymagań przechowywany jest lokalnie w Twojej
+          przeglądarce (localStorage) i nie jest wysyłany na nasze serwery. Jedynymi danymi
+          przetwarzanymi po stronie serwera mogą być:
+        </p>
+        <ul class="list-disc pl-5 mt-2 space-y-1">
+          <li>dane techniczne w logach serwera (adres IP, typ przeglądarki, czas wizyty, odwiedzone podstrony) — podstawą prawną jest art. 6 ust. 1 lit. f) RODO (prawnie uzasadniony interes, jakim jest zapewnienie bezpieczeństwa i stabilności serwisu);</li>
+          <li>dane przesłane przez Ciebie w formularzu kontaktowym (imię, adres e-mail, treść wiadomości) — podstawą prawną jest art. 6 ust. 1 lit. a) RODO (zgoda) oraz art. 6 ust. 1 lit. f) RODO (obsługa zapytań).</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">3. Cookies i technologie lokalne</h2>
+        <p>
+          Serwis używa wyłącznie niezbędnych plików cookies oraz pamięci lokalnej przeglądarki
+          (localStorage) — np. do zapamiętania Twojego postępu w warunkach promocji i ustawień filtrów.
+          Nie stosujemy cookies marketingowych, reklamowych ani profilowania bez Twojej zgody.
+          Pliki cookies niezbędne działają na podstawie art. 173 ust. 2 Prawa telekomunikacyjnego
+          (nie wymagają zgody); każde inne wykorzystanie cookies wymagałoby Twojej zgody.
+        </p>
+        <p class="mt-2">
+          Pamięć lokalną możesz w każdej chwili wyczyścić w ustawieniach przeglądarki — nie wpłynie to
+          na dostępność treści serwisu, a jedynie na zapamiętanie postępu.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">4. Odbiorcy danych</h2>
+        <p>
+          Dane mogą być przekazywane podmiotom przetwarzającym je w naszym imieniu (tzw. podmioty
+          przetwarzające): dostawca hostingu i infrastruktury (m.in. Vercel Inc. — hosting
+          statyczny serwisu), dostawca poczty e-mail oraz dostawcy narzędzi analitycznych, o ile
+          zostaną wdrożone. Wszyscy odbiorcy są zobowiązani umowami powierzenia przetwarzania.
+          Nie sprzedajemy danych osobowych i nie udostępniamy ich podmiotom trzecim w celach
+          marketingowych bez Twojej zgody.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">5. Okres przechowywania</h2>
+        <p>
+          Logi serwera przechowywane są maksymalnie 12 miesięcy. Wiadomości z formularza
+          kontaktowego przechowujemy przez okres niezbędny do obsługi sprawy, nie dłużej niż
+          24 miesiące od ostatniego kontaktu, chyba że dłuższy okres wynika z przepisów prawa.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">6. Twoje prawa</h2>
+        <p>
+          Na podstawie RODO przysługuje Ci prawo dostępu do danych, ich sprostowania, usunięcia,
+          ograniczenia przetwarzania, przenoszenia danych, sprzeciwu wobec przetwarzania oraz
+          cofnięcia zgody w dowolnym momencie (nie wpływa to na zgodność z prawem przetwarzania,
+          którego dokonano przed cofnięciem zgody). W sprawach danych napisz na
+          kontakt@hajsoholik.pl. Masz również prawo wniesienia skargi do organu nadzorczego —
+          Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa,
+          <a href="https://uodo.gov.pl" rel="noopener" class="underline">uodo.gov.pl</a>).
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-bold text-hj-text text-[17px] mb-2">7. Linki afiliacyjne i zewnętrzne</h2>
+        <p>
+          Serwis może zawierać linki afiliacyjne do ofert banków oraz linki do stron zewnętrznych.
+          Kliknięcie w link afiliacyjny może oznaczać, że operator otrzyma prowizję — nie wpływa to
+          na cenę ani warunki oferty dla Ciebie. Za treści i przetwarzanie danych na stronach
+          zewnętrznych odpowiadają ich administratorzy.
+        </p>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

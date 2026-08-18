@@ -1,0 +1,23 @@
+---
+interface Props {
+  currentPath?: string
+}
+---
+
+<footer class="mt-12 border-t border-zinc-100 bg-white">
+  <div class="max-w-[1440px] mx-auto px-6 py-8 text-[11px] text-zinc-500 text-center">
+    <p class="mb-2">
+      Hajsoholik • Promocje bankowe • Dane poglądowe • Nie jest poradą finansową
+    </p>
+    <p class="mb-4">
+      © {new Date().getFullYear()} Hajsoholik. Wszystkie nazwy banków i produktów należą do ich właścicieli.
+    </p>
+    <nav aria-label="Strony informacyjne">
+      <ul class="flex flex-wrap items-center justify-center gap-4">
+        <li><a href="/polityka-prywatnosci" class="hover:underline">Polityka prywatności</a></li>
+        <li><a href="/regulamin" class="hover:underline">Regulamin</a></li>
+        <li><a href="/kontakt" class="hover:underline">Kontakt</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>

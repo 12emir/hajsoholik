@@ -1,0 +1,489 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { PROMOTIONS, type Promotion, bankPromoUrl, promoPath, slugify } from '../../data/promotions'
+import { site } from '../../data/site'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+
+interface Props {
+  promo: Promotion
+  related: Promotion[]
+}
+
+export const getStaticPaths = (() => {
+  return PROMOTIONS.map((promo) => ({
+    params: { slug: slugify(promo.title) },
+    props: {
+      promo,
+      related: PROMOTIONS.filter(
+        (p) => p.id !== promo.id && (p.bank === promo.bank || p.category === promo.category),
+      ).slice(0, 3),
+    },
+  }))
+}) satisfies GetStaticPaths
+
+const { promo, related } = Astro.props
+
+const categoryLabel = promo.category
+const bankLabel = promo.bank
+const bonusKind = promo.bonusKind ?? 'cash'
+// Framowanie wartości w tytule zależnie od rodzaju oferty (uczciwość wobec użytkownika/AI).
+const bonusTitlePrefix =
+  bonusKind === 'interest'
+    ? `do ${promo.bonus} zł z odsetek`
+    : bonusKind === 'monthly'
+      ? `do ${promo.bonus} zł/mc cashbacku`
+      : `${promo.bonus} zł premii`
+const pageTitle = `${bonusTitlePrefix} w ${promo.bank}: ${promo.title} (2026) | Hajsoholik`
+const canonicalPath = promoPath(promo)
+const updatedHuman = new Date(`${site.updatedAt}T00:00:00+02:00`).toLocaleDateString('pl-PL', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+const verifiedHuman = new Date(`${promo.verifiedAt}T00:00:00+02:00`).toLocaleDateString('pl-PL', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+const year = new Date(`${site.updatedAt}T00:00:00+02:00`).getFullYear()
+
+const bezBikLabel = promo.bezBIK ? 'bez BIK' : 'sprawdza BIK'
+const bezWplywuLabel = promo.bezWplywu
+  ? 'bez wpływu na zdolność kredytową'
+  : 'wpływa na zdolność kredytową'
+
+const netProfit = promo.bonus - promo.cost
+const firstHaczyk = promo.haczyki[0] ?? ''
+const bonusLabel =
+  bonusKind === 'interest'
+    ? 'Szacunkowy zysk z odsetek'
+    : bonusKind === 'monthly'
+      ? 'Cashback miesięczny'
+      : 'Premia'
+const bankUrl = bankPromoUrl(promo.bank)
+// Meta description z kluczowymi faktami (kwota, koszt, BIK, deadline) — ~150–160 znaków.
+const metaDescription = `${bonusTitlePrefix} w ${promo.bank} (${categoryLabel}): ${promo.title}. Koszt ${promo.cost} zł, czas ${promo.time}, ${bezBikLabel}, ${promo.deadlineLabel}. Sprawdź warunki i haczyki przed wnioskiem.`
+
+const faq = [
+  ...(promo.faqExtra
+    ? [
+        {
+          q: promo.faqExtra.q,
+          a: promo.faqExtra.a,
+        },
+      ]
+    : []),
+  {
+    q: `Ile można dostać za ${categoryLabel.toLowerCase()} w ${bankLabel} w ${year} roku?`,
+    a: `W promocji „${promo.title}" ${bonusLabel.toLowerCase()} wynosi do ${promo.bonus} zł. Po odliczeniu kosztów (${promo.cost} zł) zysk na czysto to około ${netProfit} zł, a deklarowany ROI oferty to ${promo.roi} zł na godzinę pracy. Aby korzyść została przyznana, trzeba spełnić ${promo.requirements.length} warunki promocji — zwykle zajmuje to ok. ${promo.time}. Dane pochodzą z regulaminu ${bankLabel}, stan na ${updatedHuman}.`,
+  },
+  {
+    q: `Czy ${bankLabel} sprawdza BIK w tej promocji?`,
+    a:
+      bezBikLabel === 'bez BIK'
+        ? `Nie — promocja „${promo.title}" w ${bankLabel} nie wymaga sprawdzenia w BIK i nie wpływa na zdolność kredytową. Możesz z niej skorzystać nawet przy negatywnej historii w biurze informacji kredytowej. To jedna z kluczowych zalet oferty dla osób, które chcą uniknąć wpisów i pytań do BIK podczas zakładania konta. Pamiętaj jednak, że każdy bank może weryfikować tożsamość przez inne rejestry.`
+        : `Tak — w promocji „${promo.title}" bank ${bankLabel} sprawdza historię w BIK oraz ocenia zdolność kredytową przed otwarciem konta. Sam wniosek nie zawsze trafia do BIK, ale sprawdzenie jest standardem przy tego typu ofertach. Jeśli zależy Ci na braku wpływu na profil kredytowy, poszukaj w naszym rankingu ofert oznaczonych „bez BIK".`,
+  },
+  {
+    q: `Jak szybko można zrealizować promocję ${promo.bank} i dostać premię?`,
+    a: `Samodzielna realizacja zajmuje około ${promo.time} (${promo.timeMinutes} minut pracy). Premia zwykle wpływa w ciągu 30–60 dni po spełnieniu wszystkich warunków — np. wykonaniu wymaganych transakcji, zapewnieniu wpływu i aktywowaniu odpowiednich produktów. Warto od razu zaplanować wszystkie kroki z regulaminu, bo część banków rozlicza premie dopiero po zamknięciu okresu promocji.`,
+  },
+  {
+    q: `Czy promocja „${promo.title}" wymaga wpływu wynagrodzenia?`,
+    a: promo.bezWplywu
+      ? `Nie — promocja nie wymaga wpływu wynagrodzenia ani stałego dochodu. Wystarczy spełnić warunki opisane w regulaminie (${promo.requirements.length} kroki: ${promo.requirements.slice(0, 2).join('; ')}...), a premia i tak jest naliczana. Dzięki temu oferta jest dostępna dla studentów, osób rozpoczynających karierę i pracujących na umowach cywilnoprawnych.`
+      : 'Tak — promocja wymaga zapewnienia wpływu na konto, np. wynagrodzenia z umowy o pracę lub przelewu z innego banku. Zwykle bank wymaga jednego wpływu o odpowiedniej wartości w określonym terminie. Dokładną kwotę i okno czasowe znajdziesz w warunkach promocji poniżej oraz w regulaminie banku.',
+  },
+  {
+    q: `Na co uważać w promocji ${promo.bank}?`,
+    a: firstHaczyk
+      ? `Najczęściej pomijany szczegół regulaminu: ${firstHaczyk}. To typowy haczyk, który decyduje, czy premia faktycznie zostanie przyznana. Zespół Hajsoholik zebrał pełną listę uwag do regulaminu — znajdziesz ją w sekcji „Haczyki i uwagi do regulaminu" poniżej. Przed złożeniem wniosku przeczytaj warunki banku, zwłaszcza definicje transakcji i okresy rozliczeniowe.`
+      : `Przed złożeniem wniosku przeczytaj dokładnie regulamin promocji — zwłaszcza definicje transakcji, okresy rozliczeniowe i terminy wypłaty premii. Szczegółowe uwagi do warunków tej oferty znajdziesz w sekcji „Haczyki i uwagi do regulaminu" poniżej.`,
+  },
+]
+
+const jsonLd = [
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Hajsoholik', item: site.url },
+      { '@type': 'ListItem', position: 2, name: 'Promocje bankowe', item: `${site.url}/` },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: `${promo.bank} — ${promo.title}`,
+        item: `${site.url}${canonicalPath}`,
+      },
+    ],
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: promo.title,
+    description: promo.description,
+    category: promo.category,
+    brand: { '@type': 'Brand', name: promo.bank },
+    dateModified: site.updatedAt,
+    offers: {
+      '@type': 'Offer',
+      price: promo.cost,
+      priceCurrency: 'PLN',
+      availability:
+        promo.status === 'Archiwalna'
+          ? 'https://schema.org/Discontinued'
+          : 'https://schema.org/InStock',
+      priceValidUntil: promo.deadlineDate,
+      url: `${site.url}${canonicalPath}`,
+      description: `${bonusLabel} do ${promo.bonus} zł za skorzystanie z oferty ${promo.bank}`,
+    },
+    additionalProperty: [
+      { '@type': 'PropertyValue', name: 'Premia', value: `${promo.bonus} zł` },
+      { '@type': 'PropertyValue', name: 'Trudność', value: promo.difficulty },
+      { '@type': 'PropertyValue', name: 'Czas realizacji', value: promo.time },
+      { '@type': 'PropertyValue', name: 'BIK', value: bezBikLabel },
+      { '@type': 'PropertyValue', name: 'ROI', value: `${promo.roi} zł/h` },
+      {
+        '@type': 'PropertyValue',
+        name: 'Termin',
+        value: `${promo.deadlineDate} (${promo.deadlineLabel})`,
+      },
+      { '@type': 'PropertyValue', name: 'Data weryfikacji', value: promo.verifiedAt },
+      ...(promo.audience
+        ? [{ '@type': 'PropertyValue', name: 'Dla kogo', value: promo.audience }]
+        : []),
+    ],
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: `Jak otrzymać premię w promocji ${promo.title}`,
+    totalTime: `PT${promo.timeMinutes}M`,
+    step: promo.requirements.map((req, index) => ({
+      '@type': 'HowToStep',
+      position: index + 1,
+      name: `Krok ${index + 1}: ${req}`,
+      text: req,
+    })),
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  }),
+]
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={metaDescription}
+  path={canonicalPath}
+  jsonLd={jsonLd}
+  ogType="product"
+  ogImage={`/og/${slugify(promo.title)}.svg`}
+  noindex={promo.status === 'Archiwalna'}
+  showFreshness
+>
+  <div class="max-w-[900px] mx-auto px-4 md:px-6 py-8 md:py-12">
+    <!-- Breadcrumbs -->
+    <nav aria-label="Ścieżka nawigacji" class="text-[13px] text-zinc-500 mb-6">
+      <ol class="flex flex-wrap items-center gap-1.5">
+        <li><a href="/" class="hover:underline hover:text-zinc-900">Hajsoholik</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="/" class="hover:underline hover:text-zinc-900">Promocje bankowe</a></li>
+        <li aria-hidden="true">/</li>
+        <li class="text-zinc-900 font-semibold" aria-current="page">{promo.title}</li>
+      </ol>
+    </nav>
+
+    <!-- Hero -->
+    <header class="bg-white rounded-[16px] border border-zinc-100 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+      <div class="flex items-center gap-3 flex-wrap">
+        <div
+          class="w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-lg"
+          style={`background:${promo.color}`}
+          aria-hidden="true"
+        >
+          {promo.bankInitial}
+        </div>
+        <div>
+          <p class="text-sm font-bold text-zinc-900">{promo.bank} • {promo.category}</p>
+          <div class="flex flex-wrap items-center gap-2 mt-1">
+            <span class="text-[11px] font-bold bg-zinc-100 px-2 py-0.5 rounded-full">{promo.status}</span>
+            <span
+              class:list={[
+                'text-[11px] px-2 py-0.5 rounded-full font-bold',
+                promo.deadlineDays <= 2 ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700',
+              ]}
+            >
+              {promo.deadlineLabel}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <h1 class="text-[26px] md:text-[32px] font-black leading-tight mt-5">{promo.title}</h1>
+
+      <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2 mt-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-widest font-bold text-zinc-500">{bonusLabel}</p>
+          <p class="text-[36px] font-black leading-none">{promo.bonus} <span class="text-[18px]">zł</span></p>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-widest font-bold text-zinc-500">ROI</p>
+          <p class="text-[22px] font-black leading-none text-[#007B46]">{promo.roi} zł/h</p>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-widest font-bold text-zinc-500">Czas</p>
+          <p class="text-[18px] font-bold leading-none">{promo.time}</p>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-widest font-bold text-zinc-500">Trudność</p>
+          <p class="text-[18px] font-bold leading-none">{promo.difficulty}</p>
+        </div>
+      </div>
+
+      <p class="text-[14px] text-zinc-600 leading-relaxed mt-5">{promo.description}</p>
+
+      {promo.audience && (
+        <div class="mt-4 bg-[#F8F9FC] border border-zinc-100 rounded-[12px] p-4">
+          <p class="text-[11px] uppercase tracking-widest font-bold text-zinc-500">Dla kogo</p>
+          <p class="text-[13px] text-zinc-700 leading-relaxed mt-1">{promo.audience}</p>
+        </div>
+      )}
+
+      <div class="flex flex-wrap gap-2 mt-4">
+        {promo.tags.map((tag) => (
+          <span class="text-[11px] px-2 py-1 rounded-full bg-[#F8F9FC] border border-zinc-100">{tag}</span>
+        ))}
+        {promo.bezBIK && (
+          <span class="text-[11px] px-2 py-1 rounded-full bg-[#6C5CE7]/10 text-[#5A4BD6] font-semibold">bez BIK</span>
+        )}
+      </div>
+
+      {bankUrl && (
+        <a
+          href={bankUrl}
+          target="_blank"
+          rel="noopener"
+          class="inline-flex items-center gap-2 mt-5 text-[13px] font-bold text-[#007B46] hover:underline"
+        >
+          Regulamin i warunki promocji na stronie {promo.bank}
+          <span aria-hidden="true">↗</span>
+        </a>
+      )}
+    </header>
+
+    <!-- Main content -->
+    <div class="mt-8 grid md:grid-cols-[1.4fr_1fr] gap-8">
+      <div>
+        <!-- Kroki -->
+        <section aria-labelledby="kroki-heading">
+          <h2 id="kroki-heading" class="text-[20px] font-black mb-4">Jak otrzymać premię — {promo.requirements.length} kroków</h2>
+          <ol class="space-y-3">
+            {promo.requirements.map((req, index) => (
+              <li class="flex gap-3 p-4 bg-white rounded-[12px] border border-zinc-100">
+                <span class="w-7 h-7 rounded-full bg-[#00C26E]/10 text-[#007B46] font-black flex items-center justify-center shrink-0" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <p class="text-[14px] leading-relaxed font-medium">{req}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <!-- Haczyki -->
+        <section aria-labelledby="haczyki-heading" class="mt-8">
+          <h2 id="haczyki-heading" class="text-[20px] font-black mb-4">Haczyki i uwagi do regulaminu</h2>
+          <ul class="space-y-2.5">
+            {promo.haczyki.map((haczyk) => (
+              <li class="flex gap-2 text-[14px] text-zinc-600 leading-relaxed">
+                <span class="text-amber-600 font-bold" aria-hidden="true">•</span>
+                <span>{haczyk}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <!-- FAQ -->
+        <section aria-labelledby="faq-heading" class="mt-8">
+          <h2 id="faq-heading" class="text-[20px] font-black mb-4">Najczęstsze pytania</h2>
+          <div class="space-y-3">
+            {faq.map((item) => (
+              <details class="bg-white rounded-[12px] border border-zinc-100 p-4">
+                <summary class="font-bold text-[14px] cursor-pointer">{item.q}</summary>
+                <p class="text-[14px] text-zinc-600 leading-relaxed mt-2">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <aside>
+        <!-- Kalkulator zysku -->
+        <section aria-labelledby="kalkulator-heading" class="bg-zinc-900 text-white rounded-[16px] p-5">
+          <h2 id="kalkulator-heading" class="text-xs uppercase tracking-widest font-bold text-zinc-400">Kalkulator zysku</h2>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div class="flex justify-between">
+              <dt class="text-zinc-400">{bonusLabel}</dt>
+              <dd class="font-bold text-[#00C26E]">+{promo.bonus} zł</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-zinc-400">Koszty</dt>
+              <dd class="font-bold">-{promo.cost} zł</dd>
+            </div>
+            <div class="h-px bg-zinc-800" aria-hidden="true" />
+            <div class="flex justify-between text-[16px]">
+              <dt class="font-bold">Na czysto</dt>
+              <dd class="font-black text-[20px]">{netProfit} zł</dd>
+            </div>
+          </dl>
+          <p class="text-[11px] text-zinc-400 mt-2">ROI oferty: {promo.roi} zł / h pracy</p>
+          <a
+            href={`/?promocja=${slugify(promo.title)}`}
+            class="w-full mt-5 h-11 rounded-full bg-[#007B46] text-white font-black text-sm hover:bg-[#006b3e] transition flex items-center justify-center gap-2"
+          >
+            Zobacz w porównywarce <span aria-hidden="true">→</span>
+          </a>
+          <p class="text-[10px] text-zinc-400 text-center mt-2">Link afiliacyjny • wspierasz Hajsoholik</p>
+        </section>
+
+        <!-- Szczegóły -->
+        <section aria-labelledby="szczegoly-heading" class="bg-white border border-zinc-200 rounded-[16px] p-5 mt-4">
+          <h2 id="szczegoly-heading" class="text-xs font-bold uppercase tracking-widest text-zinc-500">Szczegóły</h2>
+          <dl class="mt-3 space-y-2 text-[13px]">
+            <div class="flex justify-between gap-4">
+              <dt class="text-zinc-500">Bank</dt>
+              <dd class="font-semibold text-right">{promo.bank}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-zinc-500">Kategoria</dt>
+              <dd class="font-semibold text-right">{promo.category}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-zinc-500">BIK</dt>
+              <dd class:list={['font-bold text-right', promo.bezBIK ? 'text-[#007B46]' : 'text-red-700']}>{bezBikLabel}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-zinc-500">Zdolność</dt>
+              <dd class:list={['font-semibold text-right', promo.bezWplywu ? 'text-[#007B46]' : '']}>{bezWplywuLabel}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-zinc-500">Koszt</dt>
+              <dd class="font-semibold text-right">{promo.cost} zł</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-zinc-500">Termin</dt>
+              <dd class="font-semibold text-right">{promo.deadlineLabel}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-zinc-500">Weryfikacja</dt>
+              <dd class="font-semibold text-right">{verifiedHuman}</dd>
+            </div>
+          </dl>
+          {bankUrl && (
+            <a
+              href={bankUrl}
+              target="_blank"
+              rel="noopener"
+              class="inline-flex items-center gap-1.5 mt-4 text-[12px] font-bold text-[#007B46] hover:underline"
+            >
+              Zobacz regulamin u {promo.bank} <span aria-hidden="true">↗</span>
+            </a>
+          )}
+        </section>
+
+        <!-- Dowód weryfikacji (E-E-A-T / content-effort) -->
+        <section aria-labelledby="weryfikacja-heading" class="bg-[#F8F9FC] border border-zinc-100 rounded-[16px] p-5 mt-4">
+          <h2 id="weryfikacja-heading" class="text-xs font-bold uppercase tracking-widest text-zinc-500">
+            Weryfikacja oferty
+          </h2>
+          <p class="text-[12px] text-zinc-600 leading-relaxed mt-2">
+            Regulamin tej promocji sprawdzony przez redakcję Hajsoholik {verifiedHuman}.
+            {bankUrl ? (
+              <>
+                {' '}
+                Źródło warunków: oficjalna strona {promo.bank}
+                {' '}
+                <a
+                  href={bankUrl}
+                  target="_blank"
+                  rel="noopener"
+                  class="font-bold text-[#007B46] hover:underline"
+                >
+                  (link do regulaminu ↗)
+                </a>
+                .
+              </>
+            ) : (
+              <> Kwoty i warunki pochodzą z danych przekazanych przez bank.</>
+            )}
+          </p>
+        </section>
+
+        <!-- Aktualizacja danych -->
+        <p class="text-[11px] text-zinc-500 mt-4">
+          Aktualizacja bazy promocji: {updatedHuman}. Warunki oferty mogą się zmienić — zawsze
+          sprawdź aktualny regulamin bezpośrednio u banku.
+        </p>
+      </aside>
+    </div>
+
+    <!-- Powiązane -->
+    {related.length > 0 && (
+      <section aria-labelledby="podobne-heading" class="mt-10">
+        <h2 id="podobne-heading" class="text-[18px] font-black mb-4">Podobne promocje bankowe</h2>
+        <ul class="grid sm:grid-cols-3 gap-3">
+          {related.map((r) => (
+            <li>
+              <a
+                href={promoPath(r)}
+                class="block h-full bg-white rounded-[12px] border border-zinc-100 p-4 hover:border-[#6C5CE7] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition"
+              >
+                <p class="text-[11px] font-bold text-zinc-500">{r.bank} • {r.category}</p>
+                <p class="text-[13px] font-bold mt-1 line-clamp-2">{r.title}</p>
+                <p class="text-[16px] font-black mt-2 text-[#007B46]">{r.bonus} zł</p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <!-- YMYL disclaimer -->
+    <section aria-label="Informacja o charakterze treści" class="mt-10 bg-amber-50 border border-amber-200 rounded-[12px] p-5">
+      <h2 class="text-[13px] font-black uppercase tracking-widest text-amber-800">Zastrzeżenie</h2>
+      <p class="text-[12px] text-zinc-700 leading-relaxed mt-2">
+        Hajsoholik.pl nie jest doradcą finansowym ani pośrednikiem bankowym. Informacje o promocjach mają charakter
+        poglądowy i mogą ulec zmianie bez ostrzeżenia — przed skorzystaniem z oferty zawsze sprawdź aktualny regulamin
+        oraz warunki u danego banku. Premie i zwroty nie są gwarantowane; ich przyznanie zależy od spełnienia warunków
+        promocji. Ten serwis może zarabiać prowizje od linków afiliacyjnych — nie wpływa to na ocenę ofert.
+      </p>
+      <p class="text-[12px] text-zinc-700 mt-2">
+        Redakcja Hajsoholik aktualizuje oferty na bieżąco (ostatnia aktualizacja bazy: {updatedHuman}).
+        Przed skorzystaniem z oferty zweryfikuj warunki w aktualnym regulaminie banku.
+      </p>
+    </section>
+
+    <!-- Metodologia / autor (E-E-A-T) -->
+    <section aria-labelledby="metodologia-heading" class="mt-8 bg-white rounded-[16px] border border-zinc-100 p-6">
+      <h2 id="metodologia-heading" class="text-[16px] font-black">Jak oceniamy promocje {promo.bank}?</h2>
+      <p class="text-[13px] text-zinc-600 leading-relaxed mt-3">
+        Zespół Hajsoholik weryfikuje regulaminy banków i porównuje aktualne warunki promocji. Premi
+        podajemy jako maksymalną wartość deklarowaną w regulaminie; ROI liczymy wg wzoru
+        ROI = (premia − koszty) ÷ czas pracy w godzinach. Dla programów rozłożonych w czasie (np. planów
+        5-miesięcznych) uwzględniamy całość warunków i okres wypłaty — dlatego ROI bywa niższy niż sama premia.
+        Regulamin tej oferty był ostatnio weryfikowany {verifiedHuman} (źródło: {promo.bank}). Oferty oznaczone
+        „bez BIK" nie wymagają weryfikacji w biurze informacji kredytowej.
+      </p>
+      <p class="text-[12px] text-zinc-500 mt-3 flex items-center gap-2">
+        <span class="w-6 h-6 rounded-full bg-[#00C26E] text-white flex items-center justify-center font-black text-[11px]" aria-hidden="true">H</span>
+        Redakcja Hajsoholik • Specjalizacja: porównywanie promocji bankowych i produktów finansowych w Polsce.
+      </p>
+    </section>
+  </div>
+</BaseLayout>

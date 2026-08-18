@@ -1,0 +1,51 @@
+---
+// Informacyjny banner cookies — serwis używa wyłącznie niezbędnych plików cookies
+// oraz localStorage (postęp promocji, filtry). Podstawa: art. 173 ust. 2 Prawa
+// telekomunikacyjnego (brak wymogu zgody), dlatego banner ma charakter informacyjny
+// i działa bez frameworka.
+// Banner renderuje się zawsze; skrypt inline ukrywa go od razu, jeśli użytkownik
+// już go zaakceptował (flaga w localStorage).
+const storageKey = 'hajsoholik_cookies_accepted'
+---
+
+<div
+  id="cookie-banner"
+  class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.06)]"
+  role="region"
+  aria-label="Informacja o cookies"
+  data-cookie-banner
+  hidden
+>
+  <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 md:px-6">
+    <p class="text-[13px] leading-relaxed text-zinc-600">
+      Używamy niezbędnych plików cookies oraz pamięci lokalnej (localStorage), aby zapamiętać
+      Twój postęp w promocjach i ustawienia filtrów. Nie zbieramy danych marketingowych.
+      Więcej w
+      <a href="/polityka-prywatnosci" class="font-semibold text-[#6C5CE7] hover:underline">
+        Polityce prywatności
+      </a>.
+    </p>
+    <button
+      type="button"
+      data-cookie-accept
+      class="min-h-[44px] shrink-0 rounded-full bg-[#6C5CE7] px-5 text-[13px] font-bold text-white transition-colors hover:bg-[#5A4BD6]"
+    >
+      OK, rozumiem
+    </button>
+  </div>
+</div>
+
+<script is:inline>
+  ;(() => {
+    if (typeof window === 'undefined') return
+    const key = 'hajsoholik_cookies_accepted'
+    const banner = document.getElementById('cookie-banner')
+    if (!banner) return
+    if (window.localStorage.getItem(key)) return
+    banner.hidden = false
+    banner.querySelector('[data-cookie-accept]')?.addEventListener('click', () => {
+      window.localStorage.setItem(key, 'true')
+      banner.hidden = true
+    })
+  })()
+</script>

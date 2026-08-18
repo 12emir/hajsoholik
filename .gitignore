@@ -1,0 +1,12 @@
+node_modules
+dist
+.astro
+.turbo
+.vercel
+.astro/
+*.log
+.DS_Store
+.shots
+shots.mjs
+axe-check.mjs
+axe-detail.mjs

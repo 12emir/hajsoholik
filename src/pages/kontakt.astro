@@ -1,0 +1,92 @@
+---
+import { site } from '../data/site'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const path = '/kontakt'
+const title = 'Kontakt — Hajsoholik'
+const description =
+  'Kontakt z Hajsoholik.pl — zgłoszenie błędu w promocji, współpraca, pytania. Operator: Zordon Intelligence Sp. z o.o.'
+
+const jsonLd = [
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Kontakt — Hajsoholik',
+    description: 'Zgłoszenia błędów, współpraca i pytania o promocje bankowe.',
+    url: `${site.url}/kontakt`,
+    inLanguage: 'pl-PL',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'Hajsoholik',
+      url: site.url,
+      email: 'kontakt@hajsoholik.pl',
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        email: 'kontakt@hajsoholik.pl',
+        availableLanguage: 'pl',
+      },
+    },
+  }),
+]
+---
+
+<BaseLayout title={title} description={description} path={path} jsonLd={jsonLd}>
+  <div class="max-w-3xl mx-auto px-4 md:px-6 py-10 md:py-14">
+    <p class="text-[12px] font-bold tracking-widest text-hj-muted uppercase mb-2">Kontakt</p>
+    <h1 class="font-black text-[28px] leading-tight mb-4">Napisz do nas</h1>
+    <p class="text-hj-muted-strong text-[15px] leading-relaxed mb-8">
+      Znalazłeś nieaktualną promocję? Chcesz współpracować? Daj nam znać.
+    </p>
+
+    <div class="bg-white border border-hj-border rounded-[16px] p-6 space-y-4">
+      <div>
+        <h2 class="font-bold text-[15px] mb-1">E-mail</h2>
+        <p>
+          <a href="mailto:kontakt@hajsoholik.pl" class="text-hj-purple font-semibold hover:underline">
+            kontakt@hajsoholik.pl
+          </a>
+        </p>
+      </div>
+      <div>
+        <h2 class="font-bold text-[15px] mb-1">Zgłoszenia błędów</h2>
+        <p class="text-hj-muted-strong text-[14px]">
+          Opisz w mailu, której promocji dotyczy problem (nazwa oferty i bank), co widzisz na
+          stronie i — jeśli znasz — aktualne warunki z regulaminu. Potwierdzone błędy poprawiamy
+          zwykle w 24–48h.
+        </p>
+      </div>
+      <div>
+        <h2 class="font-bold text-[15px] mb-1">Współpraca</h2>
+        <p class="text-hj-muted-strong text-[14px]">
+          Banki, agencje i programy partnerskie: pisz w temacie „współpraca". Odpowiadamy na
+          zgłoszenia z reguły w ciągu 2 dni roboczych.
+        </p>
+      </div>
+    </div>
+
+    <div class="bg-white border border-hj-border rounded-[16px] p-6 mt-6">
+      <h2 class="font-bold text-[15px] mb-2">Operator serwisu</h2>
+      <p class="text-hj-muted-strong text-[14px] leading-relaxed">
+        Hajsoholik.pl prowadzony jest przez <strong>Zordon Intelligence Sp. z o.o.</strong> —
+        KRS 0001190915, NIP 7252358503, REGON 542545843, Łódź, Polska.
+      </p>
+    </div>
+
+    <div class="bg-white border border-hj-border rounded-[16px] p-6 mt-6">
+      <h2 class="font-bold text-[15px] mb-2">Polityka redakcyjna i korekty</h2>
+      <p class="text-hj-muted-strong text-[14px] leading-relaxed">
+        Redakcja Hajsoholik weryfikuje promocje bankowe na podstawie publicznych regulaminów banków.
+        Każda oferta ma na swojej stronie datę ostatniej weryfikacji regulaminu. Wszystkie dane
+        (wysokość premii, warunki, terminy) podajemy z zastrzeżeniem, że oferta może ulec zmianie —
+        przed skorzystaniem z niej sprawdź aktualny regulamin u banku.
+      </p>
+      <p class="text-hj-muted-strong text-[14px] leading-relaxed mt-3">
+        W razie wykrycia błędu w danych publikujemy poprawkę, aktualizujemy datę modyfikacji strony
+        i informujemy o zmianie. Hajsoholik nie jest doradcą finansowym ani pośrednikiem bankowym;
+        część linków na stronie to linki afiliacyjne, dzięki którym serwis może pozostać bezpłatny.
+        Prowizje nie wpływają na ocenę i kolejność ofert.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

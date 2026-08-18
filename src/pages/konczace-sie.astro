@@ -1,0 +1,160 @@
+---
+import { PROMOTIONS, promoPath } from '../data/promotions'
+import { site } from '../data/site'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const ending = [...PROMOTIONS]
+  .filter((p) => p.status !== 'Archiwalna')
+  .sort((a, b) => a.deadlineDays - b.deadlineDays)
+  .slice(0, 10)
+
+const faq = [
+  {
+    q: 'Która promocja bankowa kończy się najszybciej?',
+    a: `Aktualnie najpilniejsze oferty to te z terminem do ${Math.max(...ending.map((p) => p.deadlineDays))} dni: ${ending
+      .slice(0, 3)
+      .map((p) => `${p.bank} (${p.bonus} zł)`)
+      .join(
+        ', ',
+      )}. Terminy liczymy z dat w regulaminach banków — lista poniżej jest sortowana od najkrótszego terminu. Po upływie daty oferta trafia do archiwum i znika z porównywarki.`,
+  },
+  {
+    q: 'Czy warto czekać na nowe promocje, czy skorzystać z kończących się?',
+    a: 'Promocje bankowe cyklicznie wracają (np. mBank i BNP odnawiają oferty co sezon), ale wysokość premii i warunki potrafią się zmieniać. Jeśli widzisz ofertę z wysoką premią i terminem w tym miesiącu, realizacja zajmuje zwykle 15–60 minut — warto działać przed końcem. Dołącz do naszej porównywarki, żeby nie przegapić odświeżeń.',
+  },
+  {
+    q: 'Jak Hajsoholik wylicza terminy promocji?',
+    a: 'Terminy pochodzą wprost z regulaminów i komunikatów banków. Na Hajsoholiku każda promocja ma datę końca (deadlineDate) — licznik dni jest przeliczany automatycznie przy każdej aktualizacji bazy (ostatnia: {site.updatedAt}). Dzięki temu widzisz realny czas, a nie przybliżony snapshot.',
+  },
+]
+
+const jsonLd = [
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Hajsoholik', item: site.url },
+      { '@type': 'ListItem', position: 2, name: 'Promocje bankowe', item: `${site.url}/` },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: 'Promocje kończące się',
+        item: `${site.url}/konczace-sie`,
+      },
+    ],
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Promocje bankowe kończące się w 2026',
+    description:
+      'Aktualne promocje bankowe z najkrótszym terminem — posortowane od najpilniejszych.',
+    numberOfItems: ending.length,
+    itemListElement: ending.map((promo, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: `${promo.bonus} zł za promocję ${promo.bank} — ${promo.title}`,
+      url: `${site.url}${promoPath(promo)}`,
+    })),
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  }),
+]
+---
+
+<BaseLayout
+  title={`Promocje bankowe kończące się ${new Date().toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })} — najkrótsze terminy | Hajsoholik`}
+  description={`${ending.length} promocji bankowych z najkrótszym terminem: ${ending
+    .slice(0, 3)
+    .map((p) => `${p.bank} ${p.bonus} zł`)
+    .join(', ')}. Terminy przeliczane z dat w regulaminach banków.`}
+  path="/konczace-sie"
+  jsonLd={jsonLd}
+  showFreshness
+>
+  <div class="max-w-[900px] mx-auto px-4 md:px-6 py-8 md:py-12">
+    <nav aria-label="Ścieżka nawigacji" class="text-[13px] text-zinc-500 mb-6">
+      <ol class="flex flex-wrap items-center gap-1.5">
+        <li><a href="/" class="hover:underline hover:text-zinc-900">Hajsoholik</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="/" class="hover:underline hover:text-zinc-900">Promocje bankowe</a></li>
+        <li aria-hidden="true">/</li>
+        <li class="text-zinc-900 font-semibold" aria-current="page">Kończące się</li>
+      </ol>
+    </nav>
+
+    <header class="bg-white rounded-[16px] border border-zinc-100 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+      <h1 class="text-[26px] md:text-[32px] font-black leading-tight">Promocje bankowe kończące się najszybciej</h1>
+      <p class="text-[14px] text-zinc-600 leading-relaxed mt-4">
+        Aktualne oferty z najkrótszym terminem ważności, posortowane od najbardziej pilnych. Terminy liczymy
+        wprost z dat w regulaminach banków — aktualizacja bazy: {site.updatedAt}.
+      </p>
+    </header>
+
+    <section aria-labelledby="oferty-heading" class="mt-6 bg-white rounded-[16px] border border-zinc-100 p-6">
+      <h2 id="oferty-heading" class="text-[18px] font-black">Najpilniejsze promocje ({ending.length})</h2>
+      <div class="overflow-x-auto mt-4">
+        <table class="w-full text-left text-[13px]">
+          <thead>
+            <tr class="text-zinc-500 text-[11px] uppercase tracking-widest border-b border-zinc-200">
+              <th scope="col" class="py-2 pr-3 font-bold">Promocja</th>
+              <th scope="col" class="py-2 pr-3 font-bold">Bank</th>
+              <th scope="col" class="py-2 pr-3 font-bold text-right">Premia</th>
+              <th scope="col" class="py-2 pr-3 font-bold text-right">ROI</th>
+              <th scope="col" class="py-2 pr-3 font-bold">Termin</th>
+              <th scope="col" class="py-2 font-bold">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ending.map((promo) => (
+              <tr class="border-b border-zinc-100 last:border-0">
+                <td class="py-3 pr-3">
+                  <a href={promoPath(promo)} class="font-semibold hover:text-[#007B46] hover:underline">
+                    {promo.title}
+                  </a>
+                </td>
+                <td class="py-3 pr-3 whitespace-nowrap">{promo.bank}</td>
+                <td class="py-3 pr-3 text-right font-black whitespace-nowrap">
+                  {promo.bonus.toLocaleString('pl-PL')} zł
+                </td>
+                <td class="py-3 pr-3 text-right text-[#007B46] font-semibold whitespace-nowrap">
+                  {promo.roi} zł/h
+                </td>
+                <td class="py-3 pr-3 whitespace-nowrap">{promo.deadlineLabel}</td>
+                <td class="py-3">
+                  <span
+                    class:list={[
+                      'text-[11px] px-2 py-0.5 rounded-full font-bold',
+                      promo.deadlineDays <= 2 ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700',
+                    ]}
+                  >
+                    {promo.deadlineLabel}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="faq-heading" class="mt-6 bg-white rounded-[16px] border border-zinc-100 p-6">
+      <h2 id="faq-heading" class="text-[18px] font-black">Najczęstsze pytania</h2>
+      <div class="mt-4 space-y-3">
+        {faq.map((item) => (
+          <details class="border border-zinc-100 rounded-[12px] p-4">
+            <summary class="font-bold text-[14px] cursor-pointer">{item.q}</summary>
+            <p class="text-[14px] text-zinc-600 leading-relaxed mt-2">{item.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error",
+        "useExhaustiveDependencies": "warn"
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noArrayIndexKey": "warn"
+      },
+      "style": {
+        "useConst": "error",
+        "useTemplate": "error"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "all",
+      "semicolons": "asNeeded"
+    }
+  },
+  "files": {
+    "ignore": [
+      "node_modules",
+      "dist",
+      ".turbo",
+      "coverage",
+      ".next",
+      ".expo",
+      ".astro",
+      ".vercel",
+      ".gitnexus",
+      "graphify-out",
+      "docs/graphify-out",
+      "dogfood-output",
+      "*-scrapers-test",
+      "pnpm-lock.yaml",
+      ".agents",
+      "**/drizzle"
+    ]
+  },
+  "overrides": [
+    {
+      "include": ["**/*.astro"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": [
+        "**/centralna-baza-gospodarcza-web/src/data/**/*.json",
+        "apps/centralna-baza-gospodarcza-web/src/data/**/*.json",
+        "centralna-baza-gospodarcza-web/src/data/**/*.json",
+        "**/firmy-ceidg-web/src/data/**/*.json",
+        "apps/firmy-ceidg-web/src/data/**/*.json",
+        "firmy-ceidg-web/src/data/**/*.json"
+      ],
+      "linter": { "enabled": false },
+      "formatter": { "enabled": false },
+      "organizeImports": { "enabled": false }
+    }
+  ]
+}

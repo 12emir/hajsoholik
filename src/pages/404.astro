@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const path = '/404'
+const title = 'Strona nie istnieje — Hajsoholik'
+const description =
+  'Strona, której szukasz, nie istnieje lub została przeniesiona. Wróć do listy aktualnych promocji bankowych.'
+---
+
+<BaseLayout title={title} description={description} path="/" noindex>
+  <div class="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
+    <span class="text-[64px] font-black leading-none text-[#6C5CE7]" aria-hidden="true">404</span>
+    <h1 class="mt-4 text-[24px] font-black leading-tight">Nie znaleźliśmy tej strony</h1>
+    <p class="mt-3 text-[15px] leading-relaxed text-zinc-600">
+      Strona mogła zostać przeniesiona lub promocja się zakończyła.
+      Wróć na stronę główną, aby zobaczyć aktualne oferty bankowe.
+    </p>
+    <a
+      href="/"
+      class="mt-8 inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#6C5CE7] px-6 text-[14px] font-bold text-white transition-colors hover:bg-[#5A4BD6]"
+    >
+      Wróć do promocji
+    </a>
+  </div>
+</BaseLayout>

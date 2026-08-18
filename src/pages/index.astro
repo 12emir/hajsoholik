@@ -1,0 +1,257 @@
+---
+import CookieBanner from '../components/CookieBanner.astro'
+import HajsoholikApp from '../components/app/HajsoholikApp'
+import { PROMOTIONS, promoPath } from '../data/promotions'
+import { site } from '../data/site'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const accountPromos = PROMOTIONS.filter(
+  (p) => p.category === 'Konta osobiste' && p.status !== 'Archiwalna',
+)
+const businessPromos = PROMOTIONS.filter(
+  (p) => p.category === 'Konta firmowe' && p.status !== 'Archiwalna',
+)
+const minAccount = Math.min(...accountPromos.map((p) => p.bonus))
+const maxAccount = Math.max(...accountPromos.map((p) => p.bonus))
+const maxBusiness = Math.max(...businessPromos.map((p) => p.bonus))
+const topPromos = [...PROMOTIONS]
+  .filter((p) => p.status !== 'Archiwalna')
+  .sort((a, b) => b.bonus - a.bonus)
+  .slice(0, 8)
+
+const faq = [
+  {
+    q: 'Jak działa Hajsoholik?',
+    a: 'Hajsoholik agreguje aktualne promocje bankowe w Polsce: premie za założenie konta osobistego i firmowego, karty kredytowe, konta oszczędnościowe, lokaty, polecenia, cashback i ankiety. Dla każdej oferty podajemy wysokość bonusu, warunki, czas realizacji i ROI w złotych za godzinę pracy. Wszystkie oferty mają dedykowane strony z pełnym regulaminem i haczykami.',
+  },
+  {
+    q: 'Ile można zarobić na promocjach bankowych?',
+    a: `W 2026 roku premie za założenie konta osobistego w popularnych bankach (mBank, ING, PKO BP, Santander, BNP Paribas, Nest Bank, Pekao) wynoszą od ${minAccount} do ${maxAccount} zł. Oferty dla firm sięgają ${maxBusiness} zł, a konta oszczędnościowe z oprocentowaniem promocyjnym do 7,5% potrafią dać dodatkowy zysk. Łatwe promocje „na 15 minut" to zwykle 100–350 zł za kontrakt. Dokładne wyliczenia dla każdej oferty znajdziesz na jej stronie w Hajsoholiku.`,
+  },
+  {
+    q: 'Czy promocje bankowe wymagają sprawdzenia BIK?',
+    a: 'Nie wszystkie. Założenie konta osobistego zwykle nie wiąże się ze sprawdzeniem w BIK i nie wpływa na zdolność kredytową. Karty kredytowe i niektóre konta firmowe wymagają weryfikacji w BIK oraz oceny zdolności kredytowej — każda oferta na Hajsoholiku jest oznaczona odpowiednim badge, a oferty „bez BIK" można filtrować w porównywarce.',
+  },
+  {
+    q: 'Jak szybko mogę dostać premię za konto?',
+    a: 'Proste promocje realizuje się w 15 minut (wniosek online). Premia zwykle wpływa w ciągu 30–60 dni po spełnieniu warunków, np. wykonaniu wymaganej liczby płatności kartą i zapewnieniu wpływu. Część banków wypłaca bonus w dwóch transzach — szczegóły rozliczenia są opisane w haczykach do regulaminu na stronie każdej promocji.',
+  },
+  {
+    q: 'Czy mogę skorzystać z kilku promocji jednocześnie?',
+    a: 'Tak. Nie ma limitu korzystania z promocji różnych banków jednocześnie. Wiele osób łączy 2–3 łatwe oferty miesięcznie i osiąga kilkaset złotych ekstra bez BIK i bez wpływu na zdolność kredytową. Tabela TOP promocji poniżej pomoże wybrać najszybsze i najwyżej premiowane oferty do łączenia.',
+  },
+]
+
+const jsonLd = [
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: site.title,
+    description: site.description,
+    url: `${site.url}/`,
+    inLanguage: 'pl-PL',
+    isPartOf: { '@type': 'WebSite', name: site.name, url: site.url },
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Promocje bankowe 2026',
+    description: site.description,
+    numberOfItems: PROMOTIONS.filter((p) => p.status !== 'Archiwalna').length,
+    itemListElement: PROMOTIONS.filter((p) => p.status !== 'Archiwalna').map((promo, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: `${promo.bonus} zł za promocję ${promo.bank} — ${promo.title}`,
+      description: promo.description,
+      url: `${site.url}${promoPath(promo)}`,
+    })),
+  }),
+]
+---
+
+<BaseLayout
+  title={site.title}
+  description={site.description}
+  path="/"
+  jsonLd={jsonLd}
+  bodyClass="bg-[#F8F9FC]"
+  bare
+  showFreshness
+>
+  <HajsoholikApp client:load />
+
+  <!-- Metodologia i autor (E-E-A-T / content-effort) -->
+  <div class="max-w-[1440px] mx-auto px-4 md:px-6 py-10">
+    <div class="grid md:grid-cols-2 gap-6">
+      <section aria-labelledby="jak-dzialamy" class="bg-white rounded-[16px] border border-zinc-100 p-6">
+        <h2 id="jak-dzialamy" class="text-[18px] font-black">Jak działamy i skąd bierzemy oferty</h2>
+        <p class="text-[14px] text-zinc-600 leading-relaxed mt-3">
+          Hajsoholik weryfikuje regulaminy promocji bankowych w Polsce (mBank, PKO, Santander, ING,
+          BNP Paribas, Nest Bank, VeloBank, Pekao i inne). Dla każdej oferty podajemy maksymalną premię z
+          regulaminu, warunki, czas realizacji i ROI w złotych za godzinę pracy. Baza promocji jest aktualizowana
+          na bieżąco — ostatnia aktualizacja: {site.updatedAt}.
+        </p>
+        <p class="text-[14px] text-zinc-600 leading-relaxed mt-3">
+          ROI liczymy jako stosunek premii do realnego czasu pracy (wniosek online, wymagane transakcje, wpływy).
+          Wzór: ROI = (premia − koszty) ÷ czas pracy w godzinach. Dla programów rozłożonych w czasie
+          (np. premiowych planów 5-miesięcznych) uwzględniamy całość warunków i okres wypłaty — dlatego ROI
+          bywa niższy niż sama premia. Oferty oznaczone „bez BIK" nie wymagają weryfikacji w biurze informacji
+          kredytowej. Ranking premiuje najwyższe premie i najlepszy stosunek zysku do nakładu pracy. Każda
+          promocja ma dedykowaną stronę z pełnymi warunkami, terminem i haczykami do regulaminu.
+        </p>
+      </section>
+      <section aria-labelledby="o-redakcji" class="bg-white rounded-[16px] border border-zinc-100 p-6">
+        <h2 id="o-redakcji" class="text-[18px] font-black">O redakcji</h2>
+        <p class="text-[14px] text-zinc-600 leading-relaxed mt-3 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-[#00C26E] text-white flex items-center justify-center font-black shrink-0" aria-hidden="true">H</span>
+          <span>Redakcja Hajsoholik specjalizuje się w porównywaniu promocji bankowych i produktów finansowych w
+          Polsce. Zespół testuje oferty, weryfikuje regulaminy i publikuje aktualne dane premiowe.</span>
+        </p>
+        <p class="text-[13px] text-zinc-500 mt-4">
+          Hajsoholik nie jest doradcą finansowym. Informacje mają charakter poglądowy — przed skorzystaniem z
+          oferty sprawdź regulamin banku. Serwis może otrzymywać prowizje z linków afiliacyjnych.
+        </p>
+      </section>
+    </div>
+  </div>
+
+  <!-- Tabela porównawcza TOP promocji (AI-SEO: porównania = najczęściej cytowany format) -->
+  <div class="max-w-[1440px] mx-auto px-4 md:px-6 pb-10">
+    <section aria-labelledby="top-tabela-heading" class="bg-white rounded-[16px] border border-zinc-100 p-6">
+      <h2 id="top-tabela-heading" class="text-[18px] font-black">TOP promocje bankowe 2026 — porównanie</h2>
+      <p class="text-[13px] text-zinc-500 mt-1">
+        Najwyżej premiowane, aktualne oferty. Dane z regulaminów banków, stan na {site.updatedAt}.
+      </p>
+      <div class="overflow-x-auto mt-4">
+        <table class="w-full text-left text-[13px]">
+          <thead>
+            <tr class="text-zinc-500 text-[11px] uppercase tracking-widest border-b border-zinc-200">
+              <th scope="col" class="py-2 pr-3 font-bold">Promocja</th>
+              <th scope="col" class="py-2 pr-3 font-bold">Bank</th>
+              <th scope="col" class="py-2 pr-3 font-bold">Kategoria</th>
+              <th scope="col" class="py-2 pr-3 font-bold text-right">Premia</th>
+              <th scope="col" class="py-2 pr-3 font-bold text-right">ROI</th>
+              <th scope="col" class="py-2 pr-3 font-bold">Czas</th>
+              <th scope="col" class="py-2 font-bold">BIK</th>
+            </tr>
+          </thead>
+          <tbody>
+            {topPromos.map((promo) => (
+              <tr class="border-b border-zinc-100 last:border-0">
+                <td class="py-3 pr-3">
+                  <a href={promoPath(promo)} class="font-semibold hover:text-[#007B46] hover:underline">
+                    {promo.title}
+                  </a>
+                </td>
+                <td class="py-3 pr-3 whitespace-nowrap">{promo.bank}</td>
+                <td class="py-3 pr-3 whitespace-nowrap">{promo.category}</td>
+                <td class="py-3 pr-3 text-right font-black whitespace-nowrap">
+                  {promo.bonus.toLocaleString('pl-PL')} zł
+                </td>
+                <td class="py-3 pr-3 text-right text-[#007B46] font-semibold whitespace-nowrap">
+                  {promo.roi} zł/h
+                </td>
+                <td class="py-3 pr-3 whitespace-nowrap">{promo.time}</td>
+                <td class="py-3">
+                  <span
+                    class:list={[
+                      'text-[11px] px-2 py-0.5 rounded-full font-bold',
+                      promo.bezBIK
+                        ? 'bg-[#6C5CE7]/10 text-[#5A4BD6]'
+                        : 'bg-red-50 text-red-700',
+                    ]}
+                  >
+                    {promo.bezBIK ? 'bez BIK' : 'sprawdza BIK'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- Kategorie (huby AI-SEO: fan-out z home do stron kategorii) -->
+  <div class="max-w-[1440px] mx-auto px-4 md:px-6 pb-10">
+    <section aria-labelledby="kategorie-heading" class="bg-white rounded-[16px] border border-zinc-100 p-6">
+      <h2 id="kategorie-heading" class="text-[18px] font-black">Przeglądaj promocje wg kategorii</h2>
+      <div class="flex flex-wrap gap-2 mt-4">
+        <a
+          href="/kategoria/konta-osobiste"
+          class="text-[12px] px-3 py-2 rounded-full bg-[#F8F9FC] border border-zinc-200 font-semibold hover:border-[#007B46] hover:text-[#007B46] transition"
+        >
+          Konta osobiste
+        </a>
+        <a
+          href="/kategoria/konta-firmowe"
+          class="text-[12px] px-3 py-2 rounded-full bg-[#F8F9FC] border border-zinc-200 font-semibold hover:border-[#007B46] hover:text-[#007B46] transition"
+        >
+          Konta firmowe
+        </a>
+        <a
+          href="/kategoria/karty-kredytowe"
+          class="text-[12px] px-3 py-2 rounded-full bg-[#F8F9FC] border border-zinc-200 font-semibold hover:border-[#007B46] hover:text-[#007B46] transition"
+        >
+          Karty kredytowe
+        </a>
+        <a
+          href="/kategoria/oszczednosciowe"
+          class="text-[12px] px-3 py-2 rounded-full bg-[#F8F9FC] border border-zinc-200 font-semibold hover:border-[#007B46] hover:text-[#007B46] transition"
+        >
+          Oszczędnościowe
+        </a>
+        <a
+          href="/kategoria/polecenia"
+          class="text-[12px] px-3 py-2 rounded-full bg-[#F8F9FC] border border-zinc-200 font-semibold hover:border-[#007B46] hover:text-[#007B46] transition"
+        >
+          Polecenia
+        </a>
+        <a
+          href="/kategoria/cashback"
+          class="text-[12px] px-3 py-2 rounded-full bg-[#F8F9FC] border border-zinc-200 font-semibold hover:border-[#007B46] hover:text-[#007B46] transition"
+        >
+          Cashback
+        </a>
+        <a
+          href="/kategoria/ankiety-aplikacje"
+          class="text-[12px] px-3 py-2 rounded-full bg-[#F8F9FC] border border-zinc-200 font-semibold hover:border-[#007B46] hover:text-[#007B46] transition"
+        >
+          Ankiety / aplikacje
+        </a>
+        <a
+          href="/konczace-sie"
+          class="text-[12px] px-3 py-2 rounded-full bg-red-50 border border-red-200 font-semibold text-red-700 hover:bg-red-100 transition"
+        >
+          Kończące się najszybciej
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <!-- Widoczne FAQ (zgodne z FAQPage JSON-LD) -->
+  <div class="max-w-[1440px] mx-auto px-4 md:px-6 pb-12">
+    <section aria-labelledby="faq-heading" class="bg-white rounded-[16px] border border-zinc-100 p-6">
+      <h2 id="faq-heading" class="text-[18px] font-black">Najczęstsze pytania</h2>
+      <div class="mt-4 space-y-3">
+        {faq.map((item) => (
+          <details class="border border-zinc-100 rounded-[12px] p-4">
+            <summary class="font-bold text-[14px] cursor-pointer">{item.q}</summary>
+            <p class="text-[14px] text-zinc-600 leading-relaxed mt-2">{item.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  </div>
+
+  <CookieBanner />
+</BaseLayout>

@@ -1,0 +1,289 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { CATEGORIES, type Category, PROMOTIONS, promoPath, slugify } from '../../data/promotions'
+import { site } from '../../data/site'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+
+interface Props {
+  category: Category
+}
+
+const CATEGORY_INTRO: Record<string, string> = {
+  'Konta osobiste':
+    'Premie za założenie konta osobistego — od 200 do 1010 zł za proste warunki (transakcje, wpływ, logowanie do aplikacji). Większość ofert bez BIK i bez wpływu na zdolność kredytową.',
+  'Konta firmowe':
+    'Najwyżej premiowane oferty dla przedsiębiorców: od 400 zł za konto firmowe do 4200 zł przy pełnej aktywności. Wymagane prowadzenie firmy, przelewy ZUS/US i obroty.',
+  'Karty kredytowe':
+    'Premie za kartę kredytową: 300–400 zł za wydanie i pierwsze transakcje. Wszystkie oferty sprawdzają BIK i wymagają dochodu — to główna różnica względem kont osobistych.',
+  Oszczędnościowe:
+    'Konta oszczędnościowe i lokaty z oprocentowaniem promocyjnym (6–7,5%) oraz premie za wpłaty nowych środków. Realny zysk to często suma odsetek, nie jednorazowa premia.',
+  Polecenia:
+    'Zarabianie na polecaniu: 100–200 zł za każde polecenie konta znajomemu. Programy win-win — premia trafia i do Ciebie, i do poleconej osoby.',
+  Cashback:
+    'Zwroty za zakupy: do 100 zł miesięcznie za zakupy na Allegro lub do 50 zł/mc w programach bankowych. Wartość rośnie przy regularnym używaniu karty.',
+  'Ankiety/Aplikacje':
+    'Szybkie mikrozadania w aplikacjach bankowych: ankiety, testy, zakupy u partnerów. Niskie kwoty (50–150 zł), ale realizacja w kilkanaście minut bez BIK.',
+}
+
+const CATEGORY_FAQ: Record<string, { q: string; a: string }[]> = {
+  'Konta osobiste': [
+    {
+      q: 'Ile można dostać za założenie konta osobistego w 2026?',
+      a: 'Premie za konto osobiste wynoszą obecnie od 200 do 1010 zł w zależności od banku i warunków. Najwyżej premiowane jest eKonto mBanku (do 1010 zł), wysokie bonusy oferują też BNP Paribas (350 zł), ING (300 zł) i PKO (200 zł dla młodych). Zwykle wystarczy kilka transakcji kartą, jeden wpływ i logowanie do aplikacji.',
+    },
+    {
+      q: 'Czy założenie konta osobistego wpływa na BIK?',
+      a: 'W większości promocji na konto osobiste bank nie sprawdza BIK ani nie ocenia zdolności kredytowej — oferty oznaczone „bez BIK" na Hajsoholiku są dostępne nawet przy negatywnej historii. Wyjątkiem są oferty łączone z produktami kredytowymi. Przed wnioskiem warto potwierdzić u banku, jakie rejestry weryfikuje dana promocja.',
+    },
+    {
+      q: 'Jak szybko wpływa premia za konto osobiste?',
+      a: 'Realizacja warunków zajmuje 15–60 minut, a sama premia zwykle wpływa w ciągu 30–60 dni po spełnieniu wymagań. Niektóre banki wypłacają bonus w dwóch transzach (np. po pierwszej i kolejnej transakcji). Dokładny harmonogram jest opisany w haczykach do regulaminu na stronie każdej oferty.',
+    },
+  ],
+  'Konta firmowe': [
+    {
+      q: 'Ile można dostać za założenie konta firmowego?',
+      a: 'Premie za konta firmowe sięgają od 400 zł (PKO) do 4200 zł (Pekao Konto Biznes z Żubrem). Najwyższe bonusy wymagają aktywności: przelewów do ZUS, obrotów kartą i czasem terminala płatniczego. Dla nowych firm mBank oferuje do 500 zł, a Nest Bank i BIZnest — od 1250 do 3000 zł.',
+    },
+    {
+      q: 'Czy promocje na konto firmowe wymagają BIK?',
+      a: 'Tak — konta firmowe z reguły wiążą się z weryfikacją w BIK oraz oceną zdolności kredytowej, szczególnie gdy obejmują limit lub kartę kredytową. W przeciwieństwie do kont osobistych oferty „bez BIK" są w tej kategorii rzadkością. Firma musi być aktywna i mieć numer REGON.',
+    },
+    {
+      q: 'Jakie dokumenty są potrzebne do konta firmowego?',
+      a: 'Do otwarcia konta firmowego potrzebujesz dokumentów firmy: wpis do CEIDG (jednoosobowa działalność) lub KRS, numer REGON i NIP. Większość banków pozwala założyć konto w pełni online przez profil zaufany lub wniosek w aplikacji. Część promocji wymaga dodatkowo wizyty w oddziale lub rozmowy telefonicznej.',
+    },
+  ],
+  'Karty kredytowe': [
+    {
+      q: 'Jakie premie za kartę kredytową są dostępne?',
+      a: 'Najwyższe premie za karty kredytowe to 300–400 zł: Santander daje 400 zł za kartę bez prowizji przez rok, a ING 300 zł za wydanie i wydatki 500 zł. Wszystkie oferty wymagają dochodu (zwykle min. 2000–2500 zł), sprawdzają BIK i oceniają zdolność kredytową.',
+    },
+    {
+      q: 'Czy karta kredytowa wpływa na zdolność kredytową?',
+      a: 'Tak — wniosek o kartę kredytową wiąże się ze sprawdzeniem w BIK i wpływa na zdolność kredytową. Samo posiadanie karty z terminowym spłacaniem może budować historię, ale wysoko wykorzystany limit obniża zdolność. Oferty kartowe na Hajsoholiku są oznaczone jako „sprawdza BIK".',
+    },
+    {
+      q: 'Co to znaczy „0% prowizji" przy karcie kredytowej?',
+      a: 'Karta „0% prowizji" oznacza brak opłaty za prowadzenie karty w pierwszym roku (zwykle 0 zł zamiast standardowej opłaty). Po roku bank może naliczyć opłatę — np. ING pobiera 40 zł po roku. Część ofert pozwala uniknąć opłaty przez wykonanie min. 1 transakcji miesięcznie.',
+    },
+  ],
+  Oszczędnościowe: [
+    {
+      q: 'Ile można zarobić na koncie oszczędnościowym z promocją?',
+      a: 'Zysk zależy od oprocentowania, kwoty i okresu: 7,5% w Millennium czy 7% w Alior na 3–4 miesiące przy wpłacie 50 000 zł to około 750–900 zł odsetek. Wartość podawana na Hajsoholiku to często szacunkowy zysk z odsetek, a nie gotówkowa premia — oferty są odpowiednio oznaczone.',
+    },
+    {
+      q: 'Czy konto oszczędnościowe wymaga sprawdzenia BIK?',
+      a: 'Nie — założenie konta oszczędnościowego nie wymaga sprawdzenia w BIK i nie wpływa na zdolność kredytową. To jedna z zalet tej kategorii: można oszczędzać z wysokim oprocentowaniem bez ryzyka dla historii kredytowej. Wystarczy otworzyć konto w aplikacji i wpłacić nowe środki.',
+    },
+    {
+      q: 'Co oznacza „nowe środki" w promocji na konto oszczędnościowe?',
+      a: '„Nowe środki" to pieniądze, których nie było na koncie banku w okresie referencyjnym (zwykle 30 dni przed otwarciem). Bank oprocentowuje tylko nadwyżkę ponad stan z dnia startu promocji. Warto wpłacić środki z innego banku, żeby w pełni skorzystać z promocyjnego oprocentowania.',
+    },
+  ],
+  Polecenia: [
+    {
+      q: 'Jak działa promocja za polecenie konta?',
+      a: 'Wysyłasz znajomemu kod polecający z aplikacji banku. Znajomy zakłada konto, spełnia warunki (zwykle 1 płatność lub wpływ) i oboje otrzymujecie premię — np. 100 zł dla Ciebie i 100 zł dla znajomego w Santander lub 200 zł w mBanku. Programy są limitowane miesięcznie.',
+    },
+    {
+      q: 'Ile można zarobić na polecaniu kont bankowych?',
+      a: 'Polecenie to jedno z najprostszych źródeł dochodu: 100–200 zł za osobę. Santander płaci 100 zł za polecenie (do 10 poleceń miesięcznie), mBank do 200 zł za poleconego znajomego, a VeloBank 100 zł + cashback. Przy kilku poleceniach miesięcznie można zebrać 500–1000 zł.',
+    },
+    {
+      q: 'Czy polecenie konta wpływa na BIK?',
+      a: 'Nie — sama akcja polecenia nie wiąże się ze sprawdzeniem BIK. Jednak osoba polecona zakładając konto w banku może podlegać weryfikacji w zależności od oferty. Promocje poleceń w mBanku i Santander nie wymagają BIK dla osoby zakładającej konto osobiste.',
+    },
+  ],
+  Cashback: [
+    {
+      q: 'Jak działa cashback za zakupy w bankach?',
+      a: 'Cashback to zwrot procentu od transakcji: np. 3% za zakupy na Allegro w PKO (do 100 zł miesięcznie) czy do 50 zł miesięcznie w VeloKorzyściach. Wartość jest cykliczna — rośnie przy regularnym używaniu karty, dlatego na Hajsoholiku oferty cashbackowe są oznaczone jako „cashback miesięczny".',
+    },
+    {
+      q: 'Ile można realnie odzyskać z cashbacku miesięcznego?',
+      a: 'Przy regularnych zakupach PKO Konto Za Zero zwraca do 100 zł miesięcznie (do 1200 zł rocznie), a VeloKorzyści do 50 zł/mc. Realny zysk zależy od Twoich wydatków — cashback nie wymaga jednorazowego wysiłku jak premia, ale stałego używania karty.',
+    },
+    {
+      q: 'Czy cashback bankowy jest opodatkowany?',
+      a: 'W większości przypadków zwroty cashback są traktowane jako rabat obniżający cenę zakupu, a nie przychód — nie wymagają rozliczenia podatkowego. Zasady mogą się różnić w zależności od banku i formy wypłaty (na kartę vs przelew). W razie wątpliwości warto potwierdzić interpretację u doradcy.',
+    },
+  ],
+  'Ankiety/Aplikacje': [
+    {
+      q: 'Jak zarobić na ankietach i aplikacjach bankowych?',
+      a: 'Banki płacą za aktywację aplikacji i mikrozadania: mBank płaci 150 zł za korzystanie z mOkazje (zakupy u partnerów za 100 zł), a Revolut oferował 120 zł za ankiety i testy w Revolut Junior. Realizacja trwa 10–60 minut, bez BIK i bez wpływu na zdolność kredytową.',
+    },
+    {
+      q: 'Czy promocje aplikacji wymagają założenia konta bankowego?',
+      a: 'Tak — w większości przypadków trzeba mieć konto w danym banku (np. mOkazje wymaga konta w mBanku). To najczęstszy warunek tego typu promocji. Alternatywnie niektóre programy (jak ankiety Revolut) działają na aplikacji bez klasycznego rachunku w polskim banku.',
+    },
+    {
+      q: 'Czy ankiety bankowe sprawdzają BIK?',
+      a: 'Nie — promocje za ankiety i aplikacje nie wiążą się ze sprawdzeniem w BIK ani z oceną zdolności kredytowej. To najbezpieczniejsza kategoria pod względem wpływu na historię kredytową. Jedynym wymaganiem jest zwykle weryfikacja tożsamości przy rejestracji.',
+    },
+  ],
+}
+
+const faqMap = (category: Category): { q: string; a: string }[] => CATEGORY_FAQ[category] ?? []
+
+export const getStaticPaths = (() => {
+  return CATEGORIES.map((category) => ({
+    params: { slug: slugify(category) },
+    props: { category },
+  }))
+}) satisfies GetStaticPaths
+
+const { category } = Astro.props
+const slug = slugify(category)
+const intro = CATEGORY_INTRO[category] ?? ''
+const promos = PROMOTIONS.filter((p) => p.category === category && p.status !== 'Archiwalna')
+const sorted = [...promos].sort((a, b) => b.bonus - a.bonus)
+const faq = faqMap(category)
+
+const pageTitle = `Promocje na ${category.toLowerCase()} 2026 — premie i warunki | Hajsoholik`
+const metaDescription = `${intro} Porównaj ${promos.length} aktualnych ofert ${category.toLowerCase()}: premie do ${Math.max(...promos.map((p) => p.bonus))} zł, ROI, czas realizacji i BIK.`
+const canonicalPath = `/kategoria/${slug}`
+
+const jsonLd = [
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Hajsoholik', item: site.url },
+      { '@type': 'ListItem', position: 2, name: 'Promocje bankowe', item: `${site.url}/` },
+      { '@type': 'ListItem', position: 3, name: category, item: `${site.url}${canonicalPath}` },
+    ],
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `Promocje ${category.toLowerCase()} 2026`,
+    description: intro,
+    numberOfItems: sorted.length,
+    itemListElement: sorted.map((promo, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: `${promo.bonus} zł za promocję ${promo.bank} — ${promo.title}`,
+      url: `${site.url}${promoPath(promo)}`,
+    })),
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  }),
+]
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={metaDescription}
+  path={canonicalPath}
+  jsonLd={jsonLd}
+  showFreshness
+>
+  <div class="max-w-[900px] mx-auto px-4 md:px-6 py-8 md:py-12">
+    <nav aria-label="Ścieżka nawigacji" class="text-[13px] text-zinc-500 mb-6">
+      <ol class="flex flex-wrap items-center gap-1.5">
+        <li><a href="/" class="hover:underline hover:text-zinc-900">Hajsoholik</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="/" class="hover:underline hover:text-zinc-900">Promocje bankowe</a></li>
+        <li aria-hidden="true">/</li>
+        <li class="text-zinc-900 font-semibold" aria-current="page">{category}</li>
+      </ol>
+    </nav>
+
+    <header class="bg-white rounded-[16px] border border-zinc-100 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+      <h1 class="text-[26px] md:text-[32px] font-black leading-tight">Promocje na {category.toLowerCase()} 2026</h1>
+      <p class="text-[14px] text-zinc-600 leading-relaxed mt-4">{intro}</p>
+      <div class="flex flex-wrap gap-2 mt-4">
+        {CATEGORIES.filter((c) => c !== category).map((c) => (
+          <a
+            href={`/kategoria/${slugify(c)}`}
+            class="text-[11px] px-3 py-1.5 rounded-full bg-[#F8F9FC] border border-zinc-200 text-zinc-600 hover:border-[#007B46] hover:text-[#007B46] transition"
+          >
+            {c}
+          </a>
+        ))}
+      </div>
+    </header>
+
+    <section aria-labelledby="oferty-heading" class="mt-6 bg-white rounded-[16px] border border-zinc-100 p-6">
+      <h2 id="oferty-heading" class="text-[18px] font-black">
+        Aktualne oferty {category.toLowerCase()} ({sorted.length})
+      </h2>
+      <p class="text-[13px] text-zinc-500 mt-1">Dane z regulaminów banków, stan na {site.updatedAt}.</p>
+      <div class="overflow-x-auto mt-4">
+        <table class="w-full text-left text-[13px]">
+          <thead>
+            <tr class="text-zinc-500 text-[11px] uppercase tracking-widest border-b border-zinc-200">
+              <th scope="col" class="py-2 pr-3 font-bold">Promocja</th>
+              <th scope="col" class="py-2 pr-3 font-bold">Bank</th>
+              <th scope="col" class="py-2 pr-3 font-bold text-right">Premia</th>
+              <th scope="col" class="py-2 pr-3 font-bold text-right">ROI</th>
+              <th scope="col" class="py-2 pr-3 font-bold">Czas</th>
+              <th scope="col" class="py-2 font-bold">BIK</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((promo) => (
+              <tr class="border-b border-zinc-100 last:border-0">
+                <td class="py-3 pr-3">
+                  <a href={promoPath(promo)} class="font-semibold hover:text-[#007B46] hover:underline">
+                    {promo.title}
+                  </a>
+                </td>
+                <td class="py-3 pr-3 whitespace-nowrap">{promo.bank}</td>
+                <td class="py-3 pr-3 text-right font-black whitespace-nowrap">
+                  {promo.bonus.toLocaleString('pl-PL')} zł
+                </td>
+                <td class="py-3 pr-3 text-right text-[#007B46] font-semibold whitespace-nowrap">
+                  {promo.roi} zł/h
+                </td>
+                <td class="py-3 pr-3 whitespace-nowrap">{promo.time}</td>
+                <td class="py-3">
+                  <span
+                    class:list={[
+                      'text-[11px] px-2 py-0.5 rounded-full font-bold',
+                      promo.bezBIK ? 'bg-[#6C5CE7]/10 text-[#5A4BD6]' : 'bg-red-50 text-red-700',
+                    ]}
+                  >
+                    {promo.bezBIK ? 'bez BIK' : 'sprawdza BIK'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="faq-heading" class="mt-6 bg-white rounded-[16px] border border-zinc-100 p-6">
+      <h2 id="faq-heading" class="text-[18px] font-black">Najczęstsze pytania — {category.toLowerCase()}</h2>
+      <div class="mt-4 space-y-3">
+        {faq.map((item) => (
+          <details class="border border-zinc-100 rounded-[12px] p-4">
+            <summary class="font-bold text-[14px] cursor-pointer">{item.q}</summary>
+            <p class="text-[14px] text-zinc-600 leading-relaxed mt-2">{item.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <section aria-labelledby="jak-dzialamy-heading" class="mt-6 bg-white rounded-[16px] border border-zinc-100 p-6">
+      <h2 id="jak-dzialamy-heading" class="text-[18px] font-black">Jak weryfikujemy oferty</h2>
+      <p class="text-[14px] text-zinc-600 leading-relaxed mt-3">
+        Redakcja Hajsoholik pobiera warunki prosto z regulaminów banków i sprawdza je przy każdej aktualizacji
+        bazy (ostatnia: {site.updatedAt}). ROI liczymy jako stosunek premii do realnego czasu pracy. Oferty
+        oznaczone „bez BIK" nie wymagają weryfikacji w biurze informacji kredytowej. Przed skorzystaniem z oferty
+        zawsze sprawdź regulamin banku — linki znajdziesz na stronie każdej promocji.
+      </p>
+    </section>
+  </div>
+</BaseLayout>

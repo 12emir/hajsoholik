@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "headers": [
+    {
+      "source": "/(sitemap\\.xml|robots\\.txt|llms\\.txt)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, s-maxage=3600, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
