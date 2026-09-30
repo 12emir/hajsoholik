@@ -11,6 +11,7 @@ export type Category =
   | 'Polecenia'
   | 'Cashback'
   | 'Ankiety/Aplikacje'
+  | 'Krypto'
 
 export type Difficulty = 'Łatwa' | 'Średnia' | 'Trudna'
 
@@ -48,6 +49,9 @@ export function promoPath(promo: Pick<Promotion, 'id' | 'title'>): string {
   return `/promocja/${slugify(promo.title)}`
 }
 
+import { CRYPTO_AFFILIATE_URLS } from './crypto-affiliates'
+import { CRYPTO_PROMOTIONS } from './crypto-promotions'
+
 export interface Promotion {
   id: number
   bank: string
@@ -79,6 +83,14 @@ export interface Promotion {
   bezBIK: boolean
   bezWplywu: boolean
   roi: number
+  /**
+   * Bezpośredni link do oferty/wniosku u banku (zewnętrzny, nowa karta).
+   * Tu wstawiasz URL afiliacyjny z programu partnerskiego (np. z tracking ID),
+   * gdy tylko masz konto w sieci afiliacyjnej. Domyślnie prowadzi do oficjalnej
+   * strony promocji banku — dzięki temu serwis konwertuje od pierwszego dnia.
+   * Opcjonalne: brak wartości jest uzupełniany w post-processingu (BANK_PROMO_URLS).
+   */
+  url?: string
   /** Krótki opis grupy docelowej — pokazywany w hero i schema ("Dla kogo"). */
   audience?: string
   /** Dodatkowe pytanie FAQ unikalne dla tego programu (np. różnicujące podobne oferty tego samego banku). */
@@ -104,17 +116,26 @@ const BANK_PROMO_URLS: Record<string, string> = {
   Santander: 'https://www.santander.pl/promocje',
   PKO: 'https://www.pkobp.pl/promocje/',
   Alior: 'https://www.aliorbank.pl/promocje/',
-  'BNP Paribas': 'https://www.bnpparibas.pl/',
-  BNP: 'https://www.bnpparibas.pl/',
+  'BNP Paribas': 'https://www.bnpparibas.pl/promocje/',
+  BNP: 'https://www.bnpparibas.pl/promocje/',
   VeloBank: 'https://www.velobank.pl/konta/',
   Millennium: 'https://www.bankmillennium.pl/',
   Pekao: 'https://www.pekao.com.pl/',
-  Revolut: '',
+  Revolut: 'https://www.revolut.com/pl-PL/',
 }
 
 /** Oficjalna strona banku z promocjami (regulamin) lub '' gdy brak. */
 export function bankPromoUrl(bank: string): string {
   return BANK_PROMO_URLS[bank] ?? ''
+}
+
+/** Konwersyjny tekst CTA dla promocji — prowadzi do zewnętrznego linku oferty. */
+export function ctaLabel(promo: Pick<Promotion, 'bonus' | 'bonusKind' | 'category'>): string {
+  if (promo.bonusKind === 'interest') return `Odbierz do ${promo.bonus} zł odsetek`
+  if (promo.bonusKind === 'monthly') return `Odbierz do ${promo.bonus} zł/mc cashbacku`
+  if (promo.category === 'Konta firmowe') return `Odbierz ${promo.bonus} zł dla firmy`
+  if (promo.category === 'Polecenia') return `Odbierz ${promo.bonus} zł za polecenie`
+  return `Odbierz ${promo.bonus} zł`
 }
 
 export const CATEGORIES: Category[] = [
@@ -125,6 +146,7 @@ export const CATEGORIES: Category[] = [
   'Polecenia',
   'Cashback',
   'Ankiety/Aplikacje',
+  'Krypto',
 ]
 
 export const BANKS = [
@@ -1002,9 +1024,21 @@ export const PROMOTIONS: Promotion[] = [
   },
 ]
 
+// Oferty krypto (odzyskane z produkcji) — dokładane do listy bankowej.
+PROMOTIONS.push(...CRYPTO_PROMOTIONS)
+
 // Uczciwa świeżość: deadline przeliczany z daty przy każdym buildzie, nie statyczny snapshot.
 for (const promo of PROMOTIONS) {
   const { days, label } = deadlineFrom(promo.deadlineDate)
   promo.deadlineDays = days
   promo.deadlineLabel = label
+  // Domyślny link zewnętrzny = oficjalna strona promocji banku.
+  // Gdy masz URL afiliacyjny z tracking ID — wpisz go bezpośrednio w obiekcie promocji (`url`).
+  // Krypto ma ścieżkę własną: `CRYPTO_AFFILIATE_URLS` niesie tracking ID per oferta
+  // (Bybit `affiliate_id=16319` itd.), więc override z obiektu jest nadrzędny.
+  promo.url =
+    promo.url ||
+    CRYPTO_AFFILIATE_URLS[promo.id] ||
+    BANK_PROMO_URLS[promo.bank] ||
+    ''
 }

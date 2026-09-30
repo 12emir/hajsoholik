@@ -1,6 +1,7 @@
 import { ArrowRight, Clock, Heart, Zap } from 'lucide-react'
 
-import { type Promotion, promoPath } from '@/data/promotions'
+import { CRYPTO_LOGO_URLS } from '@/data/crypto-affiliates'
+import { type Promotion, ctaLabel, promoPath } from '@/data/promotions'
 
 interface Props {
   promo: Promotion
@@ -40,13 +41,26 @@ export function PromotionCard({ promo, saved, onToggleSaved, onOpen, progress }:
       <div className="relative z-20 pointer-events-none">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-[15px]"
-              style={{ background: promo.color }}
-              aria-hidden="true"
-            >
-              {promo.bankInitial}
-            </div>
+            {CRYPTO_LOGO_URLS[promo.id] ? (
+              <img
+                src={CRYPTO_LOGO_URLS[promo.id]}
+                alt=""
+                width={40}
+                height={40}
+                loading="lazy"
+                decoding="async"
+                className="w-10 h-10 rounded-full object-contain bg-white border border-zinc-100 shrink-0 p-1"
+                aria-hidden="true"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-[15px]"
+                style={{ background: promo.color }}
+                aria-hidden="true"
+              >
+                {promo.bankInitial}
+              </div>
+            )}
             <div>
               <p className="text-[13px] font-bold">{promo.bank}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -134,17 +148,23 @@ export function PromotionCard({ promo, saved, onToggleSaved, onOpen, progress }:
 
       <div className="relative z-20 mt-4 flex items-center gap-2 pointer-events-none">
         <a
+          href={promo.url || promoPath(promo)}
+          target={promo.url ? '_blank' : undefined}
+          rel={promo.url ? 'noopener' : undefined}
+          onClick={(e) => e.stopPropagation()}
+          className="flex-1 h-11 rounded-full bg-[#007B46] text-white text-sm font-black flex items-center justify-center gap-1.5 pointer-events-auto hover:bg-[#006b3e] transition"
+          aria-label={`${ctaLabel(promo)}: ${promo.title} (otwiera stronę banku)`}
+        >
+          {ctaLabel(promo)} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+        </a>
+        <a
           href={promoPath(promo)}
           onClick={(e) => e.stopPropagation()}
-          className="flex-1 h-10 rounded-full bg-zinc-900 text-white text-sm font-bold flex items-center justify-center gap-1.5 pointer-events-auto"
-          aria-label={`Zobacz szczegóły i regulamin: ${promo.title}`}
+          className="flex-1 h-11 rounded-full bg-zinc-100 text-zinc-700 text-sm font-bold flex items-center justify-center gap-1.5 pointer-events-auto hover:bg-zinc-200 transition"
+          aria-label={`Szczegóły i warunki: ${promo.title}`}
         >
-          Sprawdź <ArrowRight className="w-4 h-4" aria-hidden="true" />
+          Szczegóły
         </a>
-        <span className="text-[11px] text-zinc-500 flex items-center gap-1">
-          <Zap className="w-3.5 h-3.5" aria-hidden="true" />
-          Oferta sprawdzona
-        </span>
       </div>
     </article>
   )
