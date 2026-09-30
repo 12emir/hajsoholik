@@ -1,0 +1,8 @@
+# app-ads.txt — AdMob (reklamy w apce iOS Hajsoholik, com.zordon.hajsoholik).
+# Google pobiera ten plik z domeny sprzedawcy z App Store:
+#   https://hajsoholik.pl/app-ads.txt
+# Wiersz sprzedawcy skopiowany 1:1 z konsoli AdMob
+#   (admob.google.com → apka „Hajsoholik: Bank Bonuses" → weryfikacja app-ads.txt).
+# Publisher: pub-5593022996374834 (to samo konto co app-ads.txt Protocols,
+# Znakomite Kupony i Airdrop Hunter).
+google.com, pub-5593022996374834, DIRECT, f08c47fec0942fa0
