@@ -5,7 +5,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 
-import { ArrowRight, ChevronDown, Search, SlidersHorizontal, Trophy, Wallet } from 'lucide-react'
+import { ArrowRight, ChevronDown, Search, SlidersHorizontal, Trophy } from 'lucide-react'
 
 import { PROMOTIONS, type Promotion, slugify } from '@/data/promotions'
 import { FeaturedCard } from './cards/FeaturedCard'
@@ -25,14 +25,6 @@ const SORT_OPTIONS = [
 type SortOption = (typeof SORT_OPTIONS)[number]
 
 const DIFF_ORDER: Record<string, number> = { Łatwa: 0, Średnia: 1, Trudna: 2 }
-
-const NAV_ITEMS = [
-  { id: 'Oferty', label: 'Oferty', icon: null },
-  { id: 'Ranking', label: 'Ranking', icon: Trophy },
-  { id: 'Mój Portfel', label: 'Mój Portfel', icon: Wallet },
-  { id: 'Kalendarz', label: 'Kalendarz', icon: null },
-  { id: 'Akademia', label: 'Akademia', icon: null },
-] as const
 
 const CATEGORY_QUERY: Record<string, string> = {
   'konta-osobiste': 'Konta osobiste',
@@ -178,17 +170,6 @@ export default function HajsoholikApp() {
 
   const totalDone = (id: number) => (progress[id] || []).filter(Boolean).length
 
-  const doneCount = PROMOTIONS.filter((p) => totalDone(p.id) === p.requirements.length).length
-
-  const activePromos = PROMOTIONS.filter((p) => p.status !== 'Archiwalna')
-  const earned = PROMOTIONS.filter((p) => progress[p.id] && progress[p.id].every(Boolean)).reduce(
-    (sum, p) => sum + p.bonus,
-    0,
-  )
-  const avgRoi = activePromos.length
-    ? Math.round(activePromos.reduce((sum, p) => sum + p.roi, 0) / activePromos.length)
-    : 0
-  const potential = activePromos.reduce((sum, p) => sum + p.bonus, 0)
   const savedBonus = PROMOTIONS.filter((p) => saved.has(p.id)).reduce((sum, p) => sum + p.bonus, 0)
 
   return (
@@ -200,112 +181,6 @@ export default function HajsoholikApp() {
         Przejdź do treści
       </a>
 
-      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-zinc-100">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-6 h-[68px] flex items-center justify-between gap-4">
-          <div className="flex items-center gap-6 md:gap-10">
-            <a href="/" className="flex items-center gap-2" aria-label="Hajsoholik — strona główna">
-              <span className="w-8 h-8 rounded-full bg-[#00C26E] flex items-center justify-center text-white font-black text-[16px]">
-                H
-              </span>
-              <span className="font-black text-[18px] tracking-tight">HAJSOHOLIK</span>
-              <span className="hidden md:inline text-[10px] font-bold bg-[#6C5CE7] text-white px-2 py-0.5 rounded-full ml-1">
-                BETA
-              </span>
-            </a>
-            <nav
-              aria-label="Nawigacja główna"
-              className="hidden lg:flex items-center gap-2 text-[14px] font-medium"
-            >
-              {NAV_ITEMS.map((item) => {
-                const Icon = item.icon
-                const isActive = activeNav === item.id
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => onNavClick(item.id)}
-                    aria-pressed={isActive}
-                    className={`px-3.5 py-2 rounded-full transition flex items-center gap-1.5 ${
-                      isActive
-                        ? 'bg-zinc-900 text-white font-bold'
-                        : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
-                    }`}
-                  >
-                    {Icon ? <Icon className="w-4 h-4" aria-hidden="true" /> : null}
-                    {item.id === 'Mój Portfel' ? (
-                      <span className="flex items-center gap-1.5">
-                        Mój Portfel{' '}
-                        <span className="bg-[#00C26E]/15 text-[#007B46] px-2 py-0.5 rounded-full text-xs font-bold">
-                          {savedBonus.toLocaleString('pl-PL')} zł
-                        </span>
-                      </span>
-                    ) : (
-                      item.label
-                    )}
-                  </button>
-                )
-              })}
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-2 md:gap-3 flex-1 justify-end">
-            <div className="relative hidden md:block w-[280px]">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
-                aria-hidden="true"
-              />
-              <label htmlFor="search-desktop" className="sr-only">
-                Szukaj banku, premii...
-              </label>
-              <input
-                id="search-desktop"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Szukaj banku, premii..."
-                className="w-full h-9 pl-9 pr-3 bg-[#F8F9FC] border border-zinc-200 rounded-full text-sm outline-none focus:border-[#6C5CE7] focus:ring-2 focus:ring-[#6C5CE7]/10"
-              />
-            </div>
-            <button
-              type="button"
-              className="md:hidden p-2 rounded-full bg-[#F8F9FC] border"
-              onClick={() => setMobileFiltersOpen((v) => !v)}
-              aria-expanded={mobileFiltersOpen}
-              aria-controls="mobile-filters"
-              aria-label="Pokaż filtry"
-            >
-              <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-        <div className="md:hidden px-4 pb-3">
-          <div className="relative">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
-              aria-hidden="true"
-            />
-            <label htmlFor="search-mobile" className="sr-only">
-              Szukaj...
-            </label>
-            <input
-              id="search-mobile"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Szukaj..."
-              className="w-full h-10 pl-9 pr-3 bg-[#F8F9FC] border border-zinc-200 rounded-full text-sm outline-none"
-            />
-          </div>
-        </div>
-        {toast && (
-          // biome-ignore lint/a11y/useSemanticElements: toast to komunikat statusowy (live region)
-          <div
-            role="status"
-            aria-live="polite"
-            className="absolute top-[70px] left-1/2 -translate-x-1/2 z-40 bg-zinc-900 text-white text-sm px-4 py-2 rounded-full shadow-xl hj-toast-enter"
-          >
-            {toast}
-          </div>
-        )}
-      </header>
 
       <main
         id="main-content"
@@ -342,44 +217,6 @@ export default function HajsoholikApp() {
 
         <div className="flex-1 min-w-0">
           {/* Statystyki */}
-          <div className="bg-white rounded-[16px] border border-zinc-100 p-4 md:p-5 flex flex-wrap items-center gap-4 md:gap-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#00C26E]/10 flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-[#007B46]" aria-hidden="true" />
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-widest text-zinc-500 font-bold">
-                  Twój postęp
-                </p>
-                <p className="font-bold text-[15px]">
-                  {doneCount}/{PROMOTIONS.length} zrobionych •{' '}
-                  <span className="text-[#007B46]">
-                    {earned.toLocaleString('pl-PL')} zł zarobione
-                  </span>{' '}
-                  • {activePromos.length} aktywne
-                </p>
-              </div>
-            </div>
-            <div className="h-px md:h-8 w-full md:w-px bg-zinc-100" />
-            <div className="flex gap-6">
-              <div>
-                <p className="text-[11px] text-zinc-500 font-bold uppercase">ROI średnio</p>
-                <p className="font-bold">{avgRoi} zł/h</p>
-              </div>
-              <div>
-                <p className="text-[11px] text-zinc-500 font-bold uppercase">Do końca mies.</p>
-                <p className="font-bold">{potential.toLocaleString('pl-PL')} zł potencjału</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="ml-auto hidden md:flex items-center gap-2 bg-zinc-900 text-white px-4 py-2 rounded-full text-sm font-semibold"
-              onClick={() => onNavClick('Mój Portfel')}
-            >
-              Zobacz portfel <ArrowRight className="w-4 h-4" aria-hidden="true" />
-            </button>
-          </div>
-
           {/* Sortowanie */}
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <h2 className="font-bold text-[18px]">
@@ -493,34 +330,7 @@ export default function HajsoholikApp() {
         />
       )}
 
-      <footer className="max-w-[1440px] mx-auto px-6 py-8 text-[11px] text-zinc-500 text-center">
-        <p className="mb-2">
-          Hajsoholik • Promocje bankowe • Dane poglądowe • Nie jest poradą finansową
-        </p>
-        <p className="mb-4">
-          © {new Date().getFullYear()} Hajsoholik. Wszystkie nazwy banków i produktów należą do ich
-          właścicieli.
-        </p>
-        <nav aria-label="Strony informacyjne">
-          <ul className="flex flex-wrap items-center justify-center gap-4">
-            <li>
-              <a href="/polityka-prywatnosci" className="hover:underline">
-                Polityka prywatności
-              </a>
-            </li>
-            <li>
-              <a href="/regulamin" className="hover:underline">
-                Regulamin
-              </a>
-            </li>
-            <li>
-              <a href="/kontakt" className="hover:underline">
-                Kontakt
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </footer>
+
     </div>
   )
 }

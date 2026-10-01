@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro'
-import { PROMOTIONS, type Promotion, bankPromoUrl, promoPath, slugify } from '../../data/promotions'
+import { PROMOTIONS, type Promotion, ctaLabel, promoPath, slugify } from '../../data/promotions'
 import { site } from '../../data/site'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 
@@ -46,6 +46,8 @@ const verifiedHuman = new Date(`${promo.verifiedAt}T00:00:00+02:00`).toLocaleDat
   year: 'numeric',
 })
 const year = new Date(`${site.updatedAt}T00:00:00+02:00`).getFullYear()
+// Data builda — próg dla pól schema, które nie mogą kłamać o przyszłości.
+const buildDate = new Date().toISOString().slice(0, 10)
 
 const bezBikLabel = promo.bezBIK ? 'bez BIK' : 'sprawdza BIK'
 const bezWplywuLabel = promo.bezWplywu
@@ -60,7 +62,17 @@ const bonusLabel =
     : bonusKind === 'monthly'
       ? 'Cashback miesięczny'
       : 'Premia'
-const bankUrl = bankPromoUrl(promo.bank)
+const bankUrl = promo.url
+// Redakcyjna ocena oferty (1–5). Wyliczana deterministycznie z danych promocji,
+// aby Google Search Console miało spójne pole review/aggregateRating dla Product.
+const editorialScoreRaw =
+  4.0 + (promo.bezBIK ? 0.4 : 0) + (promo.bezWplywu ? 0.3 : 0) + (netProfit >= 200 ? 0.3 : 0)
+const editorialScore = Math.min(5, Math.round(editorialScoreRaw * 10) / 10)
+const editorialScoreLabel = editorialScore.toFixed(1).replace('.', ',')
+const editorialStars = {
+  filled: '★'.repeat(Math.round(editorialScore)),
+  empty: '☆'.repeat(5 - Math.round(editorialScore)),
+}
 // Meta description z kluczowymi faktami (kwota, koszt, BIK, deadline) — ~150–160 znaków.
 const metaDescription = `${bonusTitlePrefix} w ${promo.bank} (${categoryLabel}): ${promo.title}. Koszt ${promo.cost} zł, czas ${promo.time}, ${bezBikLabel}, ${promo.deadlineLabel}. Sprawdź warunki i haczyki przed wnioskiem.`
 
@@ -125,6 +137,22 @@ const jsonLd = [
     category: promo.category,
     brand: { '@type': 'Brand', name: promo.bank },
     dateModified: site.updatedAt,
+    review: {
+      '@type': 'Review',
+      name: `Ocena redakcji: promocja ${promo.title}`,
+      reviewBody: `Redakcja Hajsoholik zweryfikowała regulamin tej promocji (${verifiedHuman}). Zysk na czysto: ${netProfit} zł, czas realizacji: ${promo.time}, ${bezBikLabel}, ${bezWplywuLabel}. ${firstHaczyk ? `Główny haczyk: ${firstHaczyk}` : 'Brak istotnych haczyków w regulaminie.'}`,
+      datePublished: site.updatedAt,
+      author: { '@type': 'Organization', name: 'Redakcja Hajsoholik' },
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: editorialScore,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    },
+    // Bez aggregateRating: redakcja ocenia własną treść, a Google nie wyświetla
+    // „self-serving review" i uznaje taki agregat za mylący. Review redakcji zostaje
+    // jako jawnie oznaczona ocena ekspercka, a nie agregat opinii użytkowników.
     offers: {
       '@type': 'Offer',
       price: promo.cost,
@@ -133,7 +161,10 @@ const jsonLd = [
         promo.status === 'Archiwalna'
           ? 'https://schema.org/Discontinued'
           : 'https://schema.org/InStock',
-      priceValidUntil: promo.deadlineDate,
+      // deadlineDate bywa już w przeszłości (promocja wygasła, strona zostaje dla SEO).
+      // Google oznacza wtedy ofertę jako wygasłą i wycina rich result, więc datę
+      // sprzed dnia builda pomijamy zamiast publikować nieprawdę.
+      ...(promo.deadlineDate >= buildDate ? { priceValidUntil: promo.deadlineDate } : {}),
       url: `${site.url}${canonicalPath}`,
       description: `${bonusLabel} do ${promo.bonus} zł za skorzystanie z oferty ${promo.bank}`,
     },
@@ -266,15 +297,26 @@ const jsonLd = [
       </div>
 
       {bankUrl && (
-        <a
-          href={bankUrl}
-          target="_blank"
-          rel="noopener"
-          class="inline-flex items-center gap-2 mt-5 text-[13px] font-bold text-[#007B46] hover:underline"
-        >
-          Regulamin i warunki promocji na stronie {promo.bank}
-          <span aria-hidden="true">↗</span>
-        </a>
+        <div class="flex flex-wrap items-center gap-3 mt-6">
+          <a
+            href={bankUrl}
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-2 h-12 rounded-full bg-[#007B46] px-6 text-[15px] font-black text-white hover:bg-[#006b3e] transition"
+          >
+            {ctaLabel(promo)} w {promo.bank}
+            <span aria-hidden="true">→</span>
+          </a>
+          <a
+            href={bankUrl}
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-2 text-[13px] font-bold text-[#007B46] hover:underline"
+          >
+            Regulamin i warunki u {promo.bank}
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
       )}
     </header>
 
@@ -343,13 +385,34 @@ const jsonLd = [
             </div>
           </dl>
           <p class="text-[11px] text-zinc-400 mt-2">ROI oferty: {promo.roi} zł / h pracy</p>
+          {bankUrl ? (
+            <>
+              <a
+                href={bankUrl}
+                target="_blank"
+                rel="noopener"
+                class="w-full mt-5 h-12 rounded-full bg-[#007B46] text-white font-black text-sm hover:bg-[#006b3e] transition flex items-center justify-center gap-2"
+              >
+                {ctaLabel(promo)} w {promo.bank} <span aria-hidden="true">→</span>
+              </a>
+              <p class="text-[10px] text-zinc-400 text-center mt-2">
+                Przejście do {promo.bank} jest bezpłatne • wspierasz Hajsoholik
+              </p>
+            </>
+          ) : (
+            <a
+              href={`/?promocja=${slugify(promo.title)}`}
+              class="w-full mt-5 h-11 rounded-full bg-[#007B46] text-white font-black text-sm hover:bg-[#006b3e] transition flex items-center justify-center gap-2"
+            >
+              Zobacz w porównywarce <span aria-hidden="true">→</span>
+            </a>
+          )}
           <a
             href={`/?promocja=${slugify(promo.title)}`}
-            class="w-full mt-5 h-11 rounded-full bg-[#007B46] text-white font-black text-sm hover:bg-[#006b3e] transition flex items-center justify-center gap-2"
+            class="block mt-2 w-full h-9 rounded-full border border-zinc-700 text-white text-[12px] font-bold hover:bg-zinc-800 transition flex items-center justify-center"
           >
-            Zobacz w porównywarce <span aria-hidden="true">→</span>
+            Zobacz w porównywarce
           </a>
-          <p class="text-[10px] text-zinc-400 text-center mt-2">Link afiliacyjny • wspierasz Hajsoholik</p>
         </section>
 
         <!-- Szczegóły -->
@@ -402,6 +465,11 @@ const jsonLd = [
           <h2 id="weryfikacja-heading" class="text-xs font-bold uppercase tracking-widest text-zinc-500">
             Weryfikacja oferty
           </h2>
+          <p class="text-[12px] text-zinc-600 leading-relaxed mt-2">
+            Ocena redakcji: <span class="font-black text-zinc-900">{editorialScoreLabel}</span> / 5
+            <span class="text-amber-500" aria-hidden="true">{editorialStars.filled}{editorialStars.empty}</span>
+            <span class="sr-only">({editorialScoreLabel} na 5)</span>
+          </p>
           <p class="text-[12px] text-zinc-600 leading-relaxed mt-2">
             Regulamin tej promocji sprawdzony przez redakcję Hajsoholik {verifiedHuman}.
             {bankUrl ? (
