@@ -980,7 +980,7 @@ export const PROMOTIONS: Promotion[] = [
       '300 zł za otwarcie i aktywność, a w Promocji Podróżnej nawet 2400 zł: 3% zwrotu za pierwsze 20 transakcji, 6% od 21. transakcji i 20% za wydatki podróżne. 5,7% na koncie oszczędnościowym.',
     haczyki: ['Promocja podróżna do 31.08.2026', 'Zwroty gromadzone w wirtualnym portfelu'],
     comments: 16,
-    featured: false,
+    featured: true,
     bezBIK: true,
     bezWplywu: true,
     roi: 1200,
@@ -1044,11 +1044,27 @@ for (const promo of PROMOTIONS) {
   // 1. Bezpośredni override w obiekcie (`url`)
   // 2. Leadstar affiliate URL z tracking ID (programy bankowe)
   // 3. Krypto affiliate URL z tracking ID
-  // 4. Fallback na oficjalną stronę banku
-  promo.url =
-    promo.url ||
-    PROMO_AFFILIATE_URLS[promo.id] ||
-    CRYPTO_AFFILIATE_URLS[promo.id] ||
-    BANK_PROMO_URLS[promo.bank] ||
-    ''
+  promo.url = promo.url || PROMO_AFFILIATE_URLS[promo.id] || CRYPTO_AFFILIATE_URLS[promo.id] || ''
 }
+
+/**
+ * TWARDY WYMÓG BIZNESOWY: W serwisie wyświetlamy WYŁĄCZNIE oferty z aktywnym linkiem partnerskim.
+ * Żadnych ofert bez afiliacji, żadnych generycznych stron głównych banków jako fallback.
+ */
+const AFFILIATE_ONLY_PROMOTIONS = PROMOTIONS.filter((promo) => {
+  if (!promo.url) return false
+  return (
+    promo.url.includes('leadstar.pl') ||
+    promo.url.includes('prostodo.pl') ||
+    promo.url.includes('ref=') ||
+    promo.url.includes('affiliate') ||
+    promo.url.includes('rcode=') ||
+    promo.url.includes('join/') ||
+    promo.url.includes('/r/') ||
+    promo.url.includes('clacCode=')
+  )
+})
+
+// Czyścimy bazową tablicę i zostawiamy tylko oferty z afiliacją
+PROMOTIONS.length = 0
+PROMOTIONS.push(...AFFILIATE_ONLY_PROMOTIONS)
