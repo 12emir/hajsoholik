@@ -1,6 +1,14 @@
 ---
 import type { GetStaticPaths } from 'astro'
-import { CATEGORIES, type Category, PROMOTIONS, promoPath, slugify } from '../../data/promotions'
+import { getPromoLogo } from '../../data/bank-logos'
+import {
+  CATEGORIES,
+  type Category,
+  PROMOTIONS,
+  ctaLabel,
+  promoPath,
+  slugify,
+} from '../../data/promotions'
 import { site } from '../../data/site'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 
@@ -23,6 +31,8 @@ const CATEGORY_INTRO: Record<string, string> = {
     'Zwroty za zakupy: do 100 zł miesięcznie za zakupy na Allegro lub do 50 zł/mc w programach bankowych. Wartość rośnie przy regularnym używaniu karty.',
   'Ankiety/Aplikacje':
     'Szybkie mikrozadania w aplikacjach bankowych: ankiety, testy, zakupy u partnerów. Niskie kwoty (50–150 zł), ale realizacja w kilkanaście minut bez BIK.',
+  Krypto:
+    'Bonusy powitalne, pakiety startowe i zadania Learn & Earn na renomowanych giełdach i platformach kryptowalut (Bitget, OKX, Bybit, Binance, KuCoin, SwissBorg). Odbierz premię gotówkową lub kryptowaluty po weryfikacji i pierwszych transakcjach.',
 }
 
 const CATEGORY_FAQ: Record<string, { q: string; a: string }[]> = {
@@ -124,6 +134,20 @@ const CATEGORY_FAQ: Record<string, { q: string; a: string }[]> = {
       a: 'Nie — promocje za ankiety i aplikacje nie wiążą się ze sprawdzeniem w BIK ani z oceną zdolności kredytowej. To najbezpieczniejsza kategoria pod względem wpływu na historię kredytową. Jedynym wymaganiem jest zwykle weryfikacja tożsamości przy rejestracji.',
     },
   ],
+  Krypto: [
+    {
+      q: 'Jak działają bonusy powitalne na giełdach krypto?',
+      a: 'Platformy kryptowalutowe oferują premie za rejestrację (bonus gotówkowy USDT/EUR, tokeny, pakiety powitalne) po przejściu weryfikacji tożsamości (KYC) oraz wpłaceniu depozytu lub wykonaniu pierwszych transakcji.',
+    },
+    {
+      q: 'Czy rejestracja na giełdzie krypto wpływa na BIK?',
+      a: 'Nie. Platformy kryptowalutowe nie współpracują z polskim Biurem Informacji Kredytowej (BIK) i nie mają żadnego wpływu na Twoją historię kredytową.',
+    },
+    {
+      q: 'Jak szybko otrzymam bonus na giełdzie krypto?',
+      a: 'Większość bonusów (zwłaszcza z quizów edukacyjnych Learn & Earn oraz nagród za depozyt) trafia na Twoje konto natychmiast lub w ciągu 24–48 godzin od spełnienia warunków.',
+    },
+  ],
 }
 
 const faqMap = (category: Category): { q: string; a: string }[] => CATEGORY_FAQ[category] ?? []
@@ -214,53 +238,122 @@ const jsonLd = [
       </div>
     </header>
 
-    <section aria-labelledby="oferty-heading" class="mt-6 bg-white rounded-[16px] border border-zinc-100 p-6">
-      <h2 id="oferty-heading" class="text-[18px] font-black">
-        Aktualne oferty {category.toLowerCase()} ({sorted.length})
-      </h2>
-      <p class="text-[13px] text-zinc-500 mt-1">Dane z regulaminów banków, stan na {site.updatedAt}.</p>
-      <div class="overflow-x-auto mt-4">
-        <table class="w-full text-left text-[13px]">
-          <thead>
-            <tr class="text-zinc-500 text-[11px] uppercase tracking-widest border-b border-zinc-200">
-              <th scope="col" class="py-2 pr-3 font-bold">Promocja</th>
-              <th scope="col" class="py-2 pr-3 font-bold">Bank</th>
-              <th scope="col" class="py-2 pr-3 font-bold text-right">Premia</th>
-              <th scope="col" class="py-2 pr-3 font-bold text-right">ROI</th>
-              <th scope="col" class="py-2 pr-3 font-bold">Czas</th>
-              <th scope="col" class="py-2 font-bold">BIK</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((promo) => (
-              <tr class="border-b border-zinc-100 last:border-0">
-                <td class="py-3 pr-3">
-                  <a href={promoPath(promo)} class="font-semibold hover:text-[#007B46] hover:underline">
+    <section aria-labelledby="oferty-heading" class="mt-8">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 id="oferty-heading" class="text-xl font-bold tracking-tight text-zinc-900">
+            Aktualne oferty: {category} ({sorted.length})
+          </h2>
+          <p class="text-xs text-zinc-500 mt-0.5">Wszystkie oferty zweryfikowane, stan na {site.updatedAt}.</p>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        {sorted.map((promo) => {
+          const logo = getPromoLogo(promo)
+          return (
+            <article class="group relative bg-white rounded-2xl border border-zinc-300 hover:border-zinc-400 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-200 flex flex-col justify-between">
+              <div>
+                {/* Header: Logo & Meta */}
+                <div class="flex items-center justify-between mb-3.5">
+                  <div class="flex items-center gap-3">
+                    {logo.url ? (
+                      <div class="w-11 h-11 rounded-xl bg-white border border-zinc-200 p-1.5 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+                        <img
+                          src={logo.url}
+                          alt={promo.bank}
+                          class="w-full h-full object-contain"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        class="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-xs tracking-tight shrink-0 shadow-xs border border-black/[0.06]"
+                        style={`background-color: ${logo.brand?.bg || '#18181b'}; color: ${logo.brand?.fg || '#ffffff'};`}
+                      >
+                        <span class="truncate px-1">{logo.brand?.text || promo.bankInitial}</span>
+                      </div>
+                    )}
+                    <div>
+                      <p class="text-sm font-bold text-zinc-900 leading-tight">{promo.bank}</p>
+                      <div class="flex items-center gap-1.5 mt-1">
+                        <span class="text-[10px] px-2 py-0.5 rounded-md font-medium border bg-zinc-100 text-zinc-700 border-zinc-200/50">
+                          {promo.difficulty}
+                        </span>
+                        {promo.roi > 0 && (
+                          <span class="text-[11px] text-zinc-500 font-medium">~{promo.roi} zł/h</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600">
+                    {promo.time}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h3 class="font-semibold text-[15px] leading-snug text-zinc-900 group-hover:text-zinc-700 transition line-clamp-2 mt-2 mb-3">
+                  <a href={promoPath(promo)} class="hover:underline">
                     {promo.title}
                   </a>
-                </td>
-                <td class="py-3 pr-3 whitespace-nowrap">{promo.bank}</td>
-                <td class="py-3 pr-3 text-right font-black whitespace-nowrap">
-                  {promo.bonus.toLocaleString('pl-PL')} zł
-                </td>
-                <td class="py-3 pr-3 text-right text-[#007B46] font-semibold whitespace-nowrap">
-                  {promo.roi} zł/h
-                </td>
-                <td class="py-3 pr-3 whitespace-nowrap">{promo.time}</td>
-                <td class="py-3">
-                  <span
-                    class:list={[
-                      'text-[11px] px-2 py-0.5 rounded-full font-bold',
-                      promo.bezBIK ? 'bg-[#6C5CE7]/10 text-[#5A4BD6]' : 'bg-red-50 text-red-700',
-                    ]}
-                  >
-                    {promo.bezBIK ? 'bez BIK' : 'sprawdza BIK'}
+                </h3>
+
+                {/* Bonus */}
+                <div class="flex items-baseline justify-between mb-3 pt-2 border-t border-zinc-100">
+                  <div>
+                    <span class="text-[24px] font-bold tracking-tight text-zinc-900 tabular-nums">
+                      {promo.bonus} zł
+                    </span>
+                    <span class="text-xs font-medium text-zinc-500 ml-1.5">
+                      {promo.bonusKind === 'interest'
+                        ? 'odsetek'
+                        : promo.bonusKind === 'monthly'
+                          ? 'cashback/mc'
+                          : 'premii'}
+                    </span>
+                  </div>
+                  <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600">
+                    {promo.deadlineLabel}
                   </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+
+                {/* Tags */}
+                <div class="flex flex-wrap gap-1.5 mb-3.5">
+                  {promo.tags.slice(0, 2).map((tag) => (
+                    <span class="text-[11px] px-2 py-0.5 rounded-md bg-zinc-50 text-zinc-600 border border-zinc-200/60 font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                  {promo.bezBIK && (
+                    <span class="text-[11px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-medium">
+                      bez BIK
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div class="pt-3 border-t border-zinc-100 flex items-center gap-2">
+                <a
+                  href={promo.url || promoPath(promo)}
+                  target={promo.url ? '_blank' : undefined}
+                  rel={promo.url ? 'noopener' : undefined}
+                  class="flex-1 h-9 rounded-xl bg-zinc-900 text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-zinc-800 active:scale-[0.98] transition shadow-xs"
+                >
+                  {ctaLabel(promo)} ↗
+                </a>
+                <a
+                  href={promoPath(promo)}
+                  class="h-9 px-3 rounded-xl bg-zinc-100 text-zinc-700 text-xs font-semibold flex items-center justify-center hover:bg-zinc-200 transition"
+                >
+                  Szczegóły
+                </a>
+              </div>
+            </article>
+          )
+        })}
       </div>
     </section>
 
