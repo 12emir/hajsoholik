@@ -1,16 +1,13 @@
 ---
+import { primaryNav } from '../data/nav'
+import MobileCategoryNav from './MobileCategoryNav.astro'
+
 interface Props {
   currentPath?: string
 }
 const { currentPath = '/' } = Astro.props
 
-const navItems = [
-  { label: 'Promocje', href: '/' },
-  { label: 'Konta', href: '/kategoria/konta-osobiste' },
-  { label: 'Karty', href: '/kategoria/karty-kredytowe' },
-  { label: 'Lokaty', href: '/kategoria/oszczednosciowe' },
-  { label: 'Kończące się', href: '/konczace-sie' },
-]
+const navItems = primaryNav
 ---
 
 <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:rounded-full focus:shadow-lg">
@@ -19,23 +16,22 @@ const navItems = [
 <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-zinc-100">
   <div class="max-w-[1440px] mx-auto px-4 md:px-6 h-[68px] flex items-center justify-between gap-4">
     <div class="flex items-center gap-6 md:gap-10">
-      <a href="/" class="flex items-center gap-2" aria-label="Hajsoholik — strona główna">
-        <span class="w-8 h-8 rounded-full bg-[#00C26E] flex items-center justify-center text-white font-black text-[16px]" aria-hidden="true">H</span>
-        <span class="font-black text-[18px] tracking-tight">Hajsoholik</span>
-        <span class="hidden md:inline text-[10px] font-bold bg-[#6C5CE7] text-white px-2 py-0.5 rounded-full ml-1">BETA</span>
+      <a href="/" class="flex items-center gap-2.5" aria-label="Hajsoholik — strona główna">
+        <span class="w-8 h-8 rounded-xl bg-zinc-900 flex items-center justify-center text-white font-bold text-[15px] shadow-sm tracking-tight" aria-hidden="true">H</span>
+        <span class="font-bold text-[17px] tracking-tight text-zinc-900">Hajsoholik</span>
       </a>
       <nav aria-label="Nawigacja główna">
-        <ul class="hidden lg:flex items-center gap-2 text-[14px] font-medium">
+        <ul class="hidden lg:flex items-center gap-1.5 text-[13px] font-medium">
           {
             navItems.map((item) => (
               <li>
                 <a
                   href={item.href}
                   class:list={[
-                    'px-3 py-2 rounded-full transition-colors',
+                    'px-3.5 py-1.5 rounded-full transition-colors',
                     currentPath === item.href
-                      ? 'text-zinc-900 font-bold bg-zinc-100'
-                      : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100',
+                      ? 'text-zinc-900 font-semibold bg-zinc-100 shadow-xs'
+                      : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50',
                   ]}
                 >
                   {item.label}
@@ -46,8 +42,18 @@ const navItems = [
         </ul>
       </nav>
     </div>
-    <div class="flex items-center gap-2 md:gap-3 flex-1 justify-end">
-      <span class="bg-[#00C26E]/15 text-[#007B46] px-2 py-0.5 rounded-full text-xs font-bold">BEZPŁATNIE</span>
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-2 text-xs text-zinc-500 font-medium">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true"></span>
+        <span>Zweryfikowano: 11 paź 2026</span>
+      </div>
+      <a
+        href="/kontakt"
+        class="text-xs font-semibold px-3 py-1.5 rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition"
+      >
+        Kontakt
+      </a>
     </div>
   </div>
 </header>
+<MobileCategoryNav currentPath={currentPath} />

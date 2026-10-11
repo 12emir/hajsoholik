@@ -9,7 +9,7 @@ export const site = {
   language: 'pl',
   locale: 'pl_PL',
   twitter: '@hajsoholik',
-  ogImage: '/og-default.svg',
+  ogImage: '/og-default.png',
   publishedAt: '2026-08-11',
-  updatedAt: '2026-08-14',
+  updatedAt: '2026-10-11',
 } as const

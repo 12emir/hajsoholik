@@ -52,7 +52,9 @@
       "*-scrapers-test",
       "pnpm-lock.yaml",
       ".agents",
-      "**/drizzle"
+      "**/drizzle",
+      "*.mjs",
+      "docs"
     ]
   },
   "overrides": [

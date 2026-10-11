@@ -1,36 +1,38 @@
 @import "tailwindcss";
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/inter/wght-italic.css";
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/geist";
 
 /*
- * Hajsoholik design tokens — port wzorcowego UI (Hajsoholik-Listing-Promocji-Bankowych.html).
- * Paleta: zieleń #00C26E (premia/CTAs), fiolet #6C5CE7 (filtry/akcenty), bursztyn #FFB800
- * (haczyki/ostrzeżenia), tło #F8F9FC, tekst zinc-900, font Inter.
+ * Hajsoholik design tokens — Apple-grade Utilitarian FinTech system.
+ * Paleta: ciepły off-white #F8F9FA, kontrastowe karty z precyzyjnym obrysem #E2E4E9,
+ * szmaragd semantyczny #059669 (kwoty premii/zysku), font Plus Jakarta Sans / Geist.
  */
 
 :root {
-  --hj-green: #00c26e;
-  --hj-green-dark: #00b363;
-  --hj-green-deep: #007b46;
-  --hj-green-soft: rgba(0, 194, 110, 0.15);
-  --hj-green-bg: rgba(0, 194, 110, 0.1);
-  --hj-purple: #6c5ce7;
-  --hj-purple-deep: #5a4bd6;
-  --hj-purple-soft: rgba(108, 92, 231, 0.1);
-  --hj-amber: #ffb800;
-  --hj-amber-soft: #fff4d6;
-  --hj-bg: #f8f9fc;
+  --hj-green: #059669;
+  --hj-green-dark: #047857;
+  --hj-green-deep: #065f46;
+  --hj-green-soft: rgba(5, 150, 105, 0.12);
+  --hj-green-bg: rgba(5, 150, 105, 0.08);
+  --hj-purple: #18181b;
+  --hj-purple-deep: #09090b;
+  --hj-purple-soft: rgba(24, 24, 27, 0.06);
+  --hj-amber: #d97706;
+  --hj-amber-soft: #fef3c7;
+  --hj-bg: #f8f9fa;
   --hj-card: #ffffff;
-  --hj-border: #f1f1f3;
-  --hj-border-strong: #e4e4e7;
-  --hj-text: #18181b;
-  --hj-muted: #71717a;
-  --hj-muted-strong: #52525b;
+  --hj-border: #e2e4e9;
+  --hj-border-strong: #cdd0d5;
+  --hj-text: #0f1115;
+  --hj-muted: #666d7e;
+  --hj-muted-strong: #404553;
   --hj-red: #dc2626;
   --hj-red-deep: #b91c1c;
   --hj-red-soft: #fee2e2;
   --hj-red-bg: #fef2f2;
-  --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: "Plus Jakarta Sans Variable", "Geist Variable", -apple-system, BlinkMacSystemFont,
+    "SF Pro Display", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
 }
 
 @theme inline {
@@ -69,12 +71,12 @@
   }
 
   ::selection {
-    background-color: var(--hj-green);
+    background-color: #18181b;
     color: #ffffff;
   }
 
   :focus-visible {
-    outline: 2px solid var(--hj-purple);
+    outline: 2px solid #18181b;
     outline-offset: 2px;
   }
 

@@ -31,8 +31,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 30,
-    description: 'Największa giełda kryptowalut: rejestracja z bonusem powitalnym (szacunek ~30 USD / ~120 zł). Okresowo kampanie Learn & Earn z nagrodami w tokenach (quizy o DeFi/NFT/trading; poza US).',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'Największa giełda kryptowalut: rejestracja z bonusem powitalnym (szacunek ~30 USD / ~120 zł). Okresowo kampanie Learn & Earn z nagrodami w tokenach (quizy o DeFi/NFT/trading; poza US).',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -59,8 +63,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 29,
-    description: 'Bitget — giełda z copy tradingiem. Program poleceń reklamuje mały bonus startowy i większe nagrody za handel.',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'Bitget — giełda z copy tradingiem. Program poleceń reklamuje mały bonus startowy i większe nagrody za handel.',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -87,8 +95,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 28,
-    description: 'OKX — giełda CEX z ekosystemem Web3. Marketingowe "do X USD" często dotyczy nagród za handel; w rankingu podajemy konserwatywny szacunek ~400 zł typowego welcome.',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'OKX — giełda CEX z ekosystemem Web3. Marketingowe "do X USD" często dotyczy nagród za handel; w rankingu podajemy konserwatywny szacunek ~400 zł typowego welcome.',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -115,8 +127,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 27,
-    description: 'KuCoin — giełda z szerokim wyborem altcoinów. Szacunkowy bonus powitalny ~200 zł (rząd 10–500 USD w zależności od kampanii).',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'KuCoin — giełda z szerokim wyborem altcoinów. Szacunkowy bonus powitalny ~200 zł (rząd 10–500 USD w zależności od kampanii).',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -143,8 +159,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 26,
-    description: 'Giełda Bybit z pakietem powitalnym (szacunek rzędu dziesiątek USD — w PLN ~240 zł przy typowym welcome). Popularna wśród traderów futures.',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'Giełda Bybit z pakietem powitalnym (szacunek rzędu dziesiątek USD — w PLN ~240 zł przy typowym welcome). Popularna wśród traderów futures.',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -171,8 +191,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 25,
-    description: 'Nexo — platforma earn i kredytów pod zastaw krypto. Typowy bonus polecający ok. 25 USD (~100 zł).',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'Nexo — platforma earn i kredytów pod zastaw krypto. Typowy bonus polecający ok. 25 USD (~100 zł).',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -199,8 +223,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 24,
-    description: 'SwissBorg — aplikacja inwestycyjna w krypto. Bonus polecający zwykle w przedziale 25–100 USD.',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'SwissBorg — aplikacja inwestycyjna w krypto. Bonus polecający zwykle w przedziale 25–100 USD.',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -227,8 +255,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 23,
-    description: 'Cake DeFi — produkty earn w ekosystemie DeFi. Typowy bonus polecający ok. 20 USD (~80 zł). Ryzyko smart-kontraktów jest wyższe niż na bankowym koncie.',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'Cake DeFi — produkty earn w ekosystemie DeFi. Typowy bonus polecający ok. 20 USD (~80 zł). Ryzyko smart-kontraktów jest wyższe niż na bankowym koncie.',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -255,8 +287,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 22,
-    description: 'Ledger — sprzętowy portfel do self-custody kryptowalut. To nie premia gotówkowa: kupujesz urządzenie (orientacyjnie od ~400 zł). Link prowadzi do oficjalnego sklepu z parametrem partnerskim.',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'Ledger — sprzętowy portfel do self-custody kryptowalut. To nie premia gotówkowa: kupujesz urządzenie (orientacyjnie od ~400 zł). Link prowadzi do oficjalnego sklepu z parametrem partnerskim.',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -283,8 +319,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 21,
-    description: 'Cointiply — klasyczny serwis earn/faucet: mikrozadania zamiast premii bankowej. Szacunek "do ~50 zł" to rząd wielkości przy spornej aktywności, nie gwarancja.',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'Cointiply — klasyczny serwis earn/faucet: mikrozadania zamiast premii bankowej. Szacunek "do ~50 zł" to rząd wielkości przy spornej aktywności, nie gwarancja.',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -311,8 +351,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 20,
-    description: 'Brave — przeglądarka z prywatnymi reklamami. 70/30 split (user/Brave), minimum 15 BAT do wypłaty. Realistycznie ~$2–15/mc przy 5 reklamach/h. BAT mocno stracił na wartości od ATH (90%+). Link prowadzi do oficjalnej strony — brak afiliacji.',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'Brave — przeglądarka z prywatnymi reklamami. 70/30 split (user/Brave), minimum 15 BAT do wypłaty. Realistycznie ~$2–15/mc przy 5 reklamach/h. BAT mocno stracił na wartości od ATH (90%+). Link prowadzi do oficjalnej strony — brak afiliacji.',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,
@@ -339,8 +383,12 @@ export const CRYPTO_PROMOTIONS: Promotion[] = [
     cost: 0,
     status: 'Aktywna',
     popularity: 19,
-    description: 'FireFaucet — auto-claim faucet (ETH + ~20 altcoinów), działa od lat. Realistycznie $1–15/mc; przy agresywnym shortlinkach/PTC — górna granica $30+. FaucetCrypto to siostrzany serwis.',
-    haczyki: ['Bonus zwykle w transzach — nie wypłacany od razu', 'Wymagany obrót lub depozyt w części kampanii'],
+    description:
+      'FireFaucet — auto-claim faucet (ETH + ~20 altcoinów), działa od lat. Realistycznie $1–15/mc; przy agresywnym shortlinkach/PTC — górna granica $30+. FaucetCrypto to siostrzany serwis.',
+    haczyki: [
+      'Bonus zwykle w transzach — nie wypłacany od razu',
+      'Wymagany obrót lub depozyt w części kampanii',
+    ],
     comments: 0,
     featured: false,
     bezBIK: true,

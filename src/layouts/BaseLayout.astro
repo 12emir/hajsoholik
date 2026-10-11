@@ -1,6 +1,6 @@
 ---
 import '../styles/globals.css'
-import interWoff2 from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url'
+import jakartaWoff2 from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url'
 import CookieBanner from '../components/CookieBanner.astro'
 import Footer from '../components/Footer.astro'
 import SiteHeader from '../components/SiteHeader.astro'
@@ -115,7 +115,7 @@ const structuredData = [
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
 
-    <link rel="preload" as="font" type="font/woff2" href={interWoff2} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={jakartaWoff2} crossorigin />
 
     {structuredData.map((block) => <script type="application/ld+json" is:inline set:html={block} />)}
   </head>

@@ -1,23 +1,93 @@
 ---
+import { footerCategories, footerContact, footerLegal, footerService } from '../data/footer'
+
 interface Props {
   currentPath?: string
 }
+
+const { currentPath = '/' } = Astro.props
+const year = new Date().getFullYear()
 ---
 
-<footer class="mt-12 border-t border-zinc-100 bg-white">
-  <div class="max-w-[1440px] mx-auto px-6 py-8 text-[11px] text-zinc-500 text-center">
-    <p class="mb-2">
-      Hajsoholik • Promocje bankowe • Dane poglądowe • Nie jest poradą finansową
-    </p>
-    <p class="mb-4">
-      © {new Date().getFullYear()} Hajsoholik. Wszystkie nazwy banków i produktów należą do ich właścicieli.
-    </p>
-    <nav aria-label="Strony informacyjne">
-      <ul class="flex flex-wrap items-center justify-center gap-4">
-        <li><a href="/polityka-prywatnosci" class="hover:underline">Polityka prywatności</a></li>
-        <li><a href="/regulamin" class="hover:underline">Regulamin</a></li>
-        <li><a href="/kontakt" class="hover:underline">Kontakt</a></li>
-      </ul>
-    </nav>
+<footer class="mt-12 border-t border-zinc-200 bg-zinc-900 text-white">
+  <div class="max-w-[1440px] mx-auto px-4 md:px-6 py-12">
+    <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <a href="/" class="inline-flex items-center gap-2.5" aria-label="Hajsoholik — strona główna">
+          <span
+            class="w-8 h-8 rounded-xl bg-white text-zinc-900 flex items-center justify-center font-bold text-sm tracking-tight shadow-sm"
+            aria-hidden="true">H</span
+          >
+          <span class="font-bold text-[17px] tracking-tight text-white">Hajsoholik</span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
+          Agregator promocji bankowych w Polsce. Porównuj premie za konto, kartę, lokatę i cashback —
+          sprawdzaj warunki, ROI i terminy w jednym miejscu.
+        </p>
+        <p class="mt-4 text-[11px] font-bold uppercase tracking-widest text-white/50">
+          Dane poglądowe · Nie jest poradą finansową
+        </p>
+      </div>
+
+      <nav aria-label="Kategorie promocji">
+        <p class="text-[11px] font-bold uppercase tracking-widest text-white/50">Kategorie</p>
+        <ul class="mt-3 space-y-2">
+          {
+            footerCategories.map((item) => (
+              <li>
+                <a href={item.href} class="text-sm text-white/70 hover:text-white transition">
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <nav aria-label="Serwis">
+        <p class="text-[11px] font-bold uppercase tracking-widest text-white/50">Serwis</p>
+        <ul class="mt-3 space-y-2">
+          {
+            footerService.map((item) => (
+              <li>
+                <a href={item.href} class="text-sm text-white/70 hover:text-white transition">
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <nav aria-label="Informacje prawne">
+        <p class="text-[11px] font-bold uppercase tracking-widest text-white/50">Informacje prawne</p>
+        <ul class="mt-3 space-y-2">
+          {
+            footerLegal.map((item) => (
+              <li>
+                <a href={item.href} class="text-sm text-white/70 hover:text-white transition">
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a
+              href={`mailto:${footerContact}`}
+              class="text-sm text-white/70 hover:text-white transition"
+            >
+              {footerContact}
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="mt-10 pt-6 border-t border-white/10">
+      <p class="text-[11px] text-white/50">
+        © {year} Hajsoholik. Wszystkie nazwy banków i produktów należą do ich właścicieli.
+        Dane poglądowe — nie stanowią porady finansowej.
+      </p>
+    </div>
   </div>
 </footer>

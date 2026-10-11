@@ -1,11 +1,10 @@
 /**
  * HajsoholikApp — główny interaktywny island React.
- * Port 1:1 UI z Hajsoholik-Listing-Promocji-Bankowych.html (listing promocji bankowych).
- * Stan lokalny (filtry, sort, zapisane, postęp wymagań) — bez backendu i API.
+ * Stan lokalny (filtry, sort, zapisane, postęp wymagań) — standard Apple-tier.
  */
 import { useEffect, useMemo, useState } from 'react'
 
-import { ArrowRight, ChevronDown, Search, SlidersHorizontal, Trophy } from 'lucide-react'
+import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 
 import { PROMOTIONS, type Promotion, slugify } from '@/data/promotions'
 import { FeaturedCard } from './cards/FeaturedCard'
@@ -72,8 +71,6 @@ export default function HajsoholikApp() {
     }
   })
   const [costInput, setCostInput] = useState(0)
-  const [activeNav, setActiveNav] = useState('Oferty')
-  const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
     try {
@@ -83,17 +80,6 @@ export default function HajsoholikApp() {
     }
   }, [progress])
 
-  const showToast = (message: string) => {
-    setToast(message)
-    window.setTimeout(() => setToast(null), 2500)
-  }
-
-  const onNavClick = (id: string) => {
-    setActiveNav(id)
-    if (id === 'Oferty') showToast(`Przeglądasz ${filtered.length} ofert`)
-    else showToast(`Sekcja ${id} — wkrótce dostępna`)
-  }
-
   const filtered = useMemo(() => {
     const result = PROMOTIONS.filter((p) => {
       if (
@@ -102,11 +88,7 @@ export default function HajsoholikApp() {
       )
         return false
       if (categories.length && !categories.includes(p.category)) return false
-      if (
-        banks.length &&
-        !banks.includes(p.bank) &&
-        !(p.bank === 'BNP Paribas' && banks.includes('BNP'))
-      )
+      if (banks.length && !banks.some((b) => p.bank.toLowerCase().includes(b.toLowerCase())))
         return false
       if (p.bonus < minBonus) return false
       if (difficulties.length && !difficulties.includes(p.difficulty)) return false
@@ -116,13 +98,22 @@ export default function HajsoholikApp() {
       if (noCreditImpact && !p.bezWplywu) return false
       return true
     })
+
     return [...result].sort((a, b) => {
-      if (sort === 'Najwyższa premia') return b.bonus - a.bonus
-      if (sort === 'Najlepsze ROI/h') return b.roi - a.roi
-      if (sort === 'Najłatwiejsza') return DIFF_ORDER[a.difficulty] - DIFF_ORDER[b.difficulty]
-      if (sort === 'Kończy się najszybciej') return a.deadlineDays - b.deadlineDays
-      if (sort === 'Popularność') return b.popularity - a.popularity
-      return 0
+      switch (sort) {
+        case 'Najwyższa premia':
+          return b.bonus - a.bonus
+        case 'Najlepsze ROI/h':
+          return b.roi - a.roi
+        case 'Najłatwiejsza':
+          return (DIFF_ORDER[a.difficulty] ?? 0) - (DIFF_ORDER[b.difficulty] ?? 0)
+        case 'Kończy się najszybciej':
+          return a.deadlineDays - b.deadlineDays
+        case 'Popularność':
+          return b.popularity - a.popularity
+        default:
+          return 0
+      }
     })
   }, [
     query,
@@ -137,15 +128,17 @@ export default function HajsoholikApp() {
     sort,
   ])
 
+  // TOP 3 tylko gdy nie ma wąskich filtrów
   const featured = useMemo(() => {
-    const hits = filtered.filter((p) => p.featured).slice(0, 3)
-    return hits.length ? hits : filtered.slice(0, 3)
-  }, [filtered])
+    if (categories.length || banks.length || minBonus > 0 || query) return []
+    return filtered.filter((p) => p.featured).slice(0, 3)
+  }, [filtered, categories, banks, minBonus, query])
 
-  const feed = useMemo(
-    () => filtered.filter((p) => !featured.some((f) => f.id === p.id)),
-    [filtered, featured],
-  )
+  // Karty bez duplikatów z Featured
+  const feed = useMemo(() => {
+    const featuredIds = new Set(featured.map((p) => p.id))
+    return filtered.filter((p) => !featuredIds.has(p.id))
+  }, [filtered, featured])
 
   const clearAll = () => {
     setCategories([])
@@ -168,19 +161,14 @@ export default function HajsoholikApp() {
     })
   }
 
-  const totalDone = (id: number) => (progress[id] || []).filter(Boolean).length
-
-  const savedBonus = PROMOTIONS.filter((p) => saved.has(p.id)).reduce((sum, p) => sum + p.bonus, 0)
-
   return (
-    <div className="min-h-screen bg-[#F8F9FC] text-zinc-900 font-[Inter,system-ui] antialiased">
+    <div className="min-h-screen bg-[#FBFBFD] text-zinc-900 font-sans antialiased">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:rounded-full focus:shadow-lg"
       >
         Przejdź do treści
       </a>
-
 
       <main
         id="main-content"
@@ -191,7 +179,7 @@ export default function HajsoholikApp() {
         </h1>
         <aside
           id="mobile-filters"
-          className={`${mobileFiltersOpen ? 'block' : 'hidden'} lg:block w-full lg:w-[320px] shrink-0`}
+          className={`${mobileFiltersOpen ? 'block' : 'hidden'} lg:block w-full lg:w-[300px] shrink-0`}
         >
           <SidebarFilters
             categories={categories}
@@ -216,14 +204,26 @@ export default function HajsoholikApp() {
         </aside>
 
         <div className="flex-1 min-w-0">
-          {/* Statystyki */}
-          {/* Sortowanie */}
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h2 className="font-bold text-[18px]">
-              Promocje bankowe{' '}
-              <span className="text-zinc-500 font-medium">({filtered.length})</span>
-            </h2>
-            <div className="flex items-center gap-2">
+          {/* Header nad listą */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-black/[0.06]">
+            <div>
+              <h2 className="font-semibold text-lg md:text-xl tracking-tight text-zinc-900">
+                Promocje bankowe{' '}
+                <span className="text-zinc-400 font-normal text-sm ml-1">({filtered.length})</span>
+              </h2>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Niezależne porównanie premii za konta, karty i lokaty
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen((v) => !v)}
+                className="lg:hidden px-3.5 py-1.5 rounded-xl border border-black/[0.08] bg-white text-xs font-medium text-zinc-800 shadow-xs flex items-center gap-1.5"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 text-zinc-500" aria-hidden="true" />
+                Filtry
+              </button>
               <label htmlFor="sort-select" className="text-xs text-zinc-500 hidden md:block">
                 Sortowanie:
               </label>
@@ -232,7 +232,7 @@ export default function HajsoholikApp() {
                   id="sort-select"
                   value={sort}
                   onChange={(e) => setSort(e.target.value as SortOption)}
-                  className="appearance-none bg-white border border-zinc-200 rounded-full pl-4 pr-8 py-2 text-sm font-medium outline-none"
+                  className="appearance-none bg-white border border-black/[0.08] rounded-xl pl-3.5 pr-8 py-1.5 text-xs font-medium text-zinc-800 shadow-xs outline-none hover:border-black/[0.15] transition cursor-pointer"
                 >
                   {SORT_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -241,21 +241,22 @@ export default function HajsoholikApp() {
                   ))}
                 </select>
                 <ChevronDown
-                  className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500"
+                  className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500"
                   aria-hidden="true"
                 />
               </div>
             </div>
           </div>
 
-          {/* Hity Tygodnia */}
+          {/* Wybór redakcji (TOP 3) */}
           {featured.length > 0 && (
             <div className="mb-8">
-              <div className="flex items-center gap-2 mb-3">
-                <Trophy className="w-4 h-4 text-amber-600" aria-hidden="true" />
-                <h3 className="font-black uppercase tracking-widest text-[12px]">Hity Tygodnia</h3>
-                <span className="bg-[#FFB800] text-[#18181b] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  TOP 3
+              <div className="flex items-center gap-2.5 mb-3.5">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+                  Wybór redakcji
+                </h3>
+                <span className="bg-zinc-100 text-zinc-700 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-black/[0.06]">
+                  Top 3 oferty
                 </span>
               </div>
               <div className="grid md:grid-cols-3 gap-4">
@@ -294,17 +295,17 @@ export default function HajsoholikApp() {
           </div>
 
           {filtered.length === 0 && (
-            <div className="bg-white rounded-[16px] border border-dashed border-zinc-200 p-12 text-center mt-6">
-              <p className="font-bold">Brak wyników dla tych filtrów</p>
-              <p className="text-sm text-zinc-500 mt-1">
-                Spróbuj wyczyścić filtry lub zmienić wyszukiwanie.
+            <div className="bg-white rounded-2xl border border-dashed border-zinc-200 p-12 text-center mt-6">
+              <p className="font-semibold text-zinc-900">Brak wyników dla wybranych filtrów</p>
+              <p className="text-xs text-zinc-500 mt-1">
+                Zresetuj filtry, aby wyświetlić wszystkie 36 ofert.
               </p>
               <button
                 type="button"
                 onClick={clearAll}
-                className="mt-4 px-5 py-2 rounded-full bg-zinc-900 text-white text-sm font-bold"
+                className="mt-4 px-4 py-2 rounded-xl bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 transition"
               >
-                Wyczyść filtry
+                Zresetuj filtry
               </button>
             </div>
           )}
@@ -329,8 +330,6 @@ export default function HajsoholikApp() {
           onClose={() => setSelected(null)}
         />
       )}
-
-
     </div>
   )
 }

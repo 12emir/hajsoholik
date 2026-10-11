@@ -1,0 +1,42 @@
+---
+import { primaryNav } from '../data/nav'
+
+interface Props {
+  currentPath?: string
+}
+
+const { currentPath = '/' } = Astro.props
+---
+
+<nav
+  class="lg:hidden relative border-b border-zinc-100 bg-white/95 backdrop-blur-sm overflow-x-auto overscroll-x-contain"
+  aria-label="Skróty kategorii"
+>
+  <ul class="flex gap-2 px-4 py-2 min-w-max">
+    {
+      primaryNav.map((item) => {
+        const active = currentPath === item.href
+        return (
+          <li>
+            <a
+              href={item.href}
+              class:list={[
+                'inline-flex min-h-[44px] items-center px-3.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors',
+                active
+                  ? 'bg-zinc-900 text-white'
+                  : 'bg-[#F8F9FC] text-zinc-600 border border-zinc-200 hover:border-zinc-300',
+              ]}
+              aria-current={active ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        )
+      })
+    }
+  </ul>
+  <div
+    class="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white/95 to-transparent"
+    aria-hidden="true"
+  ></div>
+</nav>

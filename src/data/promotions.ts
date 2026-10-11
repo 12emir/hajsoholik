@@ -51,6 +51,7 @@ export function promoPath(promo: Pick<Promotion, 'id' | 'title'>): string {
 
 import { CRYPTO_AFFILIATE_URLS } from './crypto-affiliates'
 import { CRYPTO_PROMOTIONS } from './crypto-promotions'
+import { PROMO_AFFILIATE_URLS } from './leadstar-catalog.generated'
 
 export interface Promotion {
   id: number
@@ -103,9 +104,9 @@ export function deadlineFrom(dateISO: string): { days: number; label: string } {
   const now = new Date()
   const days = Math.ceil((end.getTime() - now.getTime()) / 86_400_000)
   if (days <= 0) return { days: 0, label: 'Oferta zakończona' }
-  if (days === 1) return { days: 1, label: 'ostatni dzień!' }
-  if (days < 5) return { days, label: `zostały ${days} dni` }
-  return { days, label: `zostało ${days} dni` }
+  if (days === 1) return { days: 1, label: 'Ostatni dzień' }
+  if (days < 5) return { days, label: `Zostały ${days} dni` }
+  return { days, label: `Zostało ${days} dni` }
 }
 
 /** Oficjalne strony promocji banków — źródło regulaminu i warunków oferty. */
@@ -196,8 +197,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 300,
     deadlineDays: 5,
     deadlineLabel: 'zostało 5 dni',
-    deadlineDate: '2026-08-31',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 15,
@@ -230,8 +231,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 500,
     deadlineDays: 2,
     deadlineLabel: 'zostały 2 dni',
-    deadlineDate: '2026-08-29',
-    verifiedAt: '2026-08-13',
+    deadlineDate: '2026-10-14',
+    verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
     time: '1h',
     timeMinutes: 60,
@@ -270,8 +271,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 400,
     deadlineDays: 12,
     deadlineLabel: 'zostało 12 dni',
-    deadlineDate: '2026-09-10',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
     time: '1h',
     timeMinutes: 60,
@@ -304,8 +305,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 200,
     deadlineDays: 20,
     deadlineLabel: 'zostało 20 dni',
-    deadlineDate: '2026-09-15',
-    verifiedAt: '2026-08-12',
+    deadlineDate: '2026-11-30',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 15,
@@ -333,8 +334,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 600,
     deadlineDays: 8,
     deadlineLabel: 'zostało 8 dni',
-    deadlineDate: '2026-08-24',
-    verifiedAt: '2026-08-13',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Trudna',
     time: '3h+',
     timeMinutes: 180,
@@ -367,8 +368,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 350,
     deadlineDays: 1,
     deadlineLabel: 'ostatni dzień!',
-    deadlineDate: '2026-08-27',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-11-15',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 15,
@@ -396,8 +397,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 50,
     deadlineDays: 30,
     deadlineLabel: 'zostało 30 dni',
-    deadlineDate: '2026-09-15',
-    verifiedAt: '2026-08-12',
+    deadlineDate: '2026-12-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 10,
@@ -425,8 +426,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 250,
     deadlineDays: 7,
     deadlineLabel: 'zostało 7 dni',
-    deadlineDate: '2026-08-23',
-    verifiedAt: '2026-08-12',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 20,
@@ -454,8 +455,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 300,
     deadlineDays: 14,
     deadlineLabel: 'zostało 14 dni',
-    deadlineDate: '2026-08-30',
-    verifiedAt: '2026-08-13',
+    deadlineDate: '2026-11-30',
+    verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
     time: '1h',
     timeMinutes: 45,
@@ -483,8 +484,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 150,
     deadlineDays: 25,
     deadlineLabel: 'zostało 25 dni',
-    deadlineDate: '2026-09-10',
-    verifiedAt: '2026-08-13',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 15,
@@ -512,8 +513,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 100,
     deadlineDays: 18,
     deadlineLabel: 'zostało 18 dni',
-    deadlineDate: '2026-09-03',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-11-15',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 15,
@@ -541,8 +542,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 400,
     deadlineDays: 3,
     deadlineLabel: 'zostały 3 dni',
-    deadlineDate: '2026-08-19',
-    verifiedAt: '2026-08-13',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Trudna',
     time: '3h+',
     timeMinutes: 180,
@@ -570,8 +571,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 300,
     deadlineDays: 9,
     deadlineLabel: 'zostało 9 dni',
-    deadlineDate: '2026-08-25',
-    verifiedAt: '2026-08-12',
+    deadlineDate: '2026-12-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 20,
@@ -599,8 +600,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 250,
     deadlineDays: 6,
     deadlineLabel: 'zostało 6 dni',
-    deadlineDate: '2026-08-22',
-    verifiedAt: '2026-08-13',
+    deadlineDate: '2026-11-30',
+    verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
     time: '1h',
     timeMinutes: 40,
@@ -628,8 +629,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 120,
     deadlineDays: 40,
     deadlineLabel: 'zostało 40 dni',
-    deadlineDate: '2026-07-31',
-    verifiedAt: '2026-07-31',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '1h',
     timeMinutes: 60,
@@ -657,8 +658,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 1010,
     deadlineDays: 30,
     deadlineLabel: 'zostało 30 dni',
-    deadlineDate: '2026-09-15',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
     time: '1h',
     timeMinutes: 60,
@@ -700,8 +701,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 910,
     deadlineDays: 30,
     deadlineLabel: 'zostało 30 dni',
-    deadlineDate: '2026-09-15',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '1h',
     timeMinutes: 45,
@@ -740,8 +741,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 500,
     deadlineDays: 21,
     deadlineLabel: 'został 21 dni',
-    deadlineDate: '2026-09-06',
-    verifiedAt: '2026-08-13',
+    deadlineDate: '2026-11-15',
+    verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
     time: '1h',
     timeMinutes: 60,
@@ -776,8 +777,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 1250,
     deadlineDays: 30,
     deadlineLabel: 'zostało 30 dni',
-    deadlineDate: '2026-09-15',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-11-15',
+    verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
     time: '3h+',
     timeMinutes: 120,
@@ -814,8 +815,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 3000,
     deadlineDays: 30,
     deadlineLabel: 'zostało 30 dni',
-    deadlineDate: '2026-09-15',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-11-30',
+    verifiedAt: '2026-10-11',
     difficulty: 'Trudna',
     time: '3h+',
     timeMinutes: 180,
@@ -849,8 +850,8 @@ export const PROMOTIONS: Promotion[] = [
     bonusKind: 'monthly',
     deadlineDays: 60,
     deadlineLabel: 'zostało 60 dni',
-    deadlineDate: '2026-10-15',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 15,
@@ -885,8 +886,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 100,
     deadlineDays: 45,
     deadlineLabel: 'zostało 45 dni',
-    deadlineDate: '2026-09-30',
-    verifiedAt: '2026-08-13',
+    deadlineDate: '2026-11-30',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 15,
@@ -922,8 +923,8 @@ export const PROMOTIONS: Promotion[] = [
     bonusKind: 'interest',
     deadlineDays: 30,
     deadlineLabel: 'zostało 30 dni',
-    deadlineDate: '2026-09-15',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-12-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 20,
@@ -960,8 +961,8 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 300,
     deadlineDays: 17,
     deadlineLabel: 'zostało 17 dni',
-    deadlineDate: '2026-09-02',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-10-31',
+    verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
     time: '15min',
     timeMinutes: 15,
@@ -994,12 +995,12 @@ export const PROMOTIONS: Promotion[] = [
     bonus: 4200,
     deadlineDays: 30,
     deadlineLabel: 'zostało 30 dni',
-    deadlineDate: '2026-09-15',
-    verifiedAt: '2026-08-14',
+    deadlineDate: '2026-11-30',
+    verifiedAt: '2026-10-11',
     difficulty: 'Trudna',
     time: '3h+',
     timeMinutes: 180,
-    tags: ['premia do 4200 zł', '4% zwrotu za transakcje'],
+    tags: ['Dla spółek i JDG', '4% zwrotu za transakcje'],
     requirements: [
       'Załóż firmę z bankiem i zawrzyj umowę o konto z kartą Mastercard',
       'Wykonuj przelewy do ZUS min. 300 zł miesięcznie',
@@ -1032,12 +1033,21 @@ for (const promo of PROMOTIONS) {
   const { days, label } = deadlineFrom(promo.deadlineDate)
   promo.deadlineDays = days
   promo.deadlineLabel = label
-  // Domyślny link zewnętrzny = oficjalna strona promocji banku.
-  // Gdy masz URL afiliacyjny z tracking ID — wpisz go bezpośrednio w obiekcie promocji (`url`).
-  // Krypto ma ścieżkę własną: `CRYPTO_AFFILIATE_URLS` niesie tracking ID per oferta
-  // (Bybit `affiliate_id=16319` itd.), więc override z obiektu jest nadrzędny.
+  if (days <= 0) {
+    promo.status = 'Archiwalna'
+  } else if (days <= 2) {
+    promo.status = 'Kończy się w 48h'
+  } else {
+    promo.status = 'Aktywna'
+  }
+  // Link partnerski:
+  // 1. Bezpośredni override w obiekcie (`url`)
+  // 2. Leadstar affiliate URL z tracking ID (programy bankowe)
+  // 3. Krypto affiliate URL z tracking ID
+  // 4. Fallback na oficjalną stronę banku
   promo.url =
     promo.url ||
+    PROMO_AFFILIATE_URLS[promo.id] ||
     CRYPTO_AFFILIATE_URLS[promo.id] ||
     BANK_PROMO_URLS[promo.bank] ||
     ''

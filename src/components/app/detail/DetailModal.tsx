@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 
-import { ArrowRight, Check, Clock, TriangleAlert, Users, X } from 'lucide-react'
+import { ArrowUpRight, Check, Clock, TriangleAlert, Users, X } from 'lucide-react'
 
-import { type Promotion, bankPromoUrl, promoPath } from '@/data/promotions'
+import { BankAvatar } from '@/components/app/BankAvatar'
+import { type Promotion, ctaLabel, promoPath } from '@/data/promotions'
 
 interface Props {
   promo: Promotion
@@ -13,7 +14,7 @@ interface Props {
   onClose: () => void
 }
 
-/** Modal szczegółów promocji — port 1:1 z artifactu (kroki, haczyki, kalkulator ROI). */
+/** Modal szczegółów promocji — standard Apple-tier. */
 export function DetailModal({
   promo,
   costInput,
@@ -28,16 +29,14 @@ export function DetailModal({
   const done = progress.filter(Boolean).length
   const total = promo.requirements.length
   const roi = Math.round((promo.bonus - costInput) / (promo.timeMinutes / 60))
+  const isEndingSoon = promo.deadlineDays > 0 && promo.deadlineDays <= 3
 
-  // Focus close button on open; restore focus to trigger element on unmount.
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null
     closeButtonRef.current?.focus()
     return () => previouslyFocused?.focus()
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- focus management only on mount/unmount
   }, [])
 
-  // Escape closes; Tab/Shift+Tab trap focus inside the dialog.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -67,59 +66,59 @@ export function DetailModal({
   }, [onClose])
 
   return (
-    <div
-      // biome-ignore lint/a11y/useSemanticElements: modal jako komponent z focus trap + Escape (wzorzec sheet)
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      open
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-transparent p-0 m-0 w-full h-full max-w-none max-h-none border-0"
       aria-labelledby={titleId}
     >
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: tło dekoracyjne, zamknięcie przez Escape w useEffect */}
-      <div
-        className="absolute inset-0 bg-zinc-900/40 backdrop-blur-sm"
+      <button
+        type="button"
+        tabIndex={-1}
+        className="absolute inset-0 bg-zinc-900/40 backdrop-blur-sm transition-opacity cursor-default border-0 p-0 w-full h-full"
         onClick={onClose}
-        aria-hidden="true"
+        aria-label="Zamknij tło"
       />
       <div
         ref={dialogRef}
-        className="relative w-full md:max-w-[760px] max-h-[92vh] md:max-h-[88vh] bg-white md:rounded-[20px] rounded-t-[20px] shadow-[0_20px_80px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col"
+        className="relative w-full md:max-w-[760px] max-h-[92vh] md:max-h-[88vh] bg-white md:rounded-2xl rounded-t-2xl shadow-[0_20px_80px_rgba(0,0,0,0.18)] border border-zinc-200 overflow-hidden flex flex-col"
       >
-        <div
-          className="h-1 w-full shrink-0"
-          style={{ background: promo.color }}
-          aria-hidden="true"
-        />
         <div className="p-5 md:p-7 overflow-y-auto">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex gap-3">
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-lg"
-                style={{ background: promo.color }}
-                aria-hidden="true"
-              >
-                {promo.bankInitial}
-              </div>
+            <div className="flex gap-3.5 items-start">
+              <BankAvatar promo={promo} size="lg" />
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-bold bg-zinc-100 px-2 py-1 rounded-full">
+                  <span className="text-xs font-semibold text-zinc-700 bg-zinc-100 px-2.5 py-0.5 rounded-full border border-black/[0.04]">
                     {promo.bank} • {promo.category}
                   </span>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full font-bold ${
-                      promo.deadlineDays <= 2
-                        ? 'bg-red-50 text-red-700'
-                        : 'bg-amber-50 text-amber-700'
+                    className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+                      isEndingSoon
+                        ? 'bg-amber-50 text-amber-800 border border-amber-200/60'
+                        : 'bg-zinc-100 text-zinc-600'
                     }`}
                   >
                     {promo.deadlineLabel}
                   </span>
                 </div>
-                <h2 id={titleId} className="text-[22px] font-black leading-tight mt-2">
+                <h2
+                  id={titleId}
+                  className="text-xl md:text-2xl font-bold tracking-tight text-zinc-900 leading-snug mt-2"
+                >
                   {promo.title}
                 </h2>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="text-[32px] font-black">{promo.bonus} zł</span>
-                  <span className="text-sm text-zinc-500">premii • ROI {promo.roi} zł/h</span>
+                <div className="flex items-baseline gap-3 mt-2">
+                  <span className="text-3xl font-extrabold tracking-tight text-zinc-900 tabular-nums">
+                    {promo.bonus} zł
+                  </span>
+                  <span className="text-xs font-medium text-zinc-500">
+                    {promo.bonusKind === 'interest'
+                      ? 'odsetek'
+                      : promo.bonusKind === 'monthly'
+                        ? 'cashback/mc'
+                        : 'premii'}{' '}
+                    • ROI ~{promo.roi} zł/h
+                  </span>
                 </div>
               </div>
             </div>
@@ -127,41 +126,41 @@ export function DetailModal({
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0"
+              className="w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200 flex items-center justify-center shrink-0 transition"
               aria-label="Zamknij szczegóły promocji"
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
 
-          <p className="text-[14px] text-zinc-600 leading-relaxed mt-5">{promo.description}</p>
+          <p className="text-sm text-zinc-600 leading-relaxed mt-5">{promo.description}</p>
 
-          <div className="grid md:grid-cols-[1.2fr_0.8fr] gap-6 mt-7">
+          <div className="grid md:grid-cols-[1.2fr_0.8fr] gap-6 mt-6">
             <div>
-              <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
-                <Check className="w-4 h-4 text-[#007B46]" aria-hidden="true" />
+              <h3 className="font-semibold text-xs uppercase tracking-wider text-zinc-900 mb-3 flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600" aria-hidden="true" />
                 Kroki do wykonania
               </h3>
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {promo.requirements.map((requirement, index) => {
                   const isDone = progress[index] ?? false
                   return (
                     <label
                       key={requirement}
-                      className={`flex gap-3 p-3 rounded-[12px] border cursor-pointer transition ${
+                      className={`flex gap-3 p-3 rounded-xl border cursor-pointer transition select-none ${
                         isDone
-                          ? 'bg-[#00C26E]/5 border-[#007B46]/80'
-                          : 'bg-[#F8F9FC] border-zinc-100'
+                          ? 'bg-emerald-50/50 border-emerald-300/80 text-zinc-500'
+                          : 'bg-zinc-50/60 border-zinc-200/60 hover:bg-zinc-50'
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={isDone}
                         onChange={() => setProgressItem(index, !isDone)}
-                        className="mt-0.5 w-4 h-4 accent-[#007B46]"
+                        className="mt-0.5 w-4 h-4 rounded border-zinc-300 accent-zinc-900"
                       />
                       <span
-                        className={`text-[13px] ${isDone ? 'line-through text-zinc-500' : 'font-medium'}`}
+                        className={`text-xs leading-relaxed ${isDone ? 'line-through text-zinc-400' : 'font-medium text-zinc-800'}`}
                       >
                         {index + 1}. {requirement}
                       </span>
@@ -169,19 +168,19 @@ export function DetailModal({
                   )
                 })}
               </div>
-              <p className="text-[11px] text-zinc-500 mt-3" aria-live="polite">
-                Postęp: {done}/{total} kroków
+              <p className="text-[11px] text-zinc-400 mt-2" aria-live="polite">
+                Postęp wymagań: {done}/{total} kroków
               </p>
 
-              <div className="mt-6">
-                <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
+              <div className="mt-5">
+                <h3 className="font-semibold text-xs uppercase tracking-wider text-zinc-900 mb-2.5 flex items-center gap-1.5">
                   <TriangleAlert className="w-4 h-4 text-amber-600" aria-hidden="true" />
-                  Haczyki i regulamin
+                  Haczyki i warunki regulaminu
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-1.5">
                   {promo.haczyki.map((haczyk) => (
-                    <li key={haczyk} className="text-[13px] text-zinc-600 flex gap-2">
-                      <span className="text-amber-600" aria-hidden="true">
+                    <li key={haczyk} className="text-xs text-zinc-600 flex gap-2 leading-relaxed">
+                      <span className="text-amber-600 font-bold" aria-hidden="true">
                         •
                       </span>
                       {haczyk}
@@ -190,36 +189,30 @@ export function DetailModal({
                 </ul>
               </div>
 
-              <div className="mt-6 bg-[#F8F9FC] rounded-[12px] p-4">
-                <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">
-                  Weryfikacja oferty
+              <div className="mt-5 bg-zinc-50 rounded-xl p-4 border border-black/[0.06]">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
+                  Weryfikacja redakcji
                 </p>
-                <p className="text-[13px] flex items-center gap-2">
-                  <Users className="w-4 h-4" aria-hidden="true" />
+                <p className="text-xs text-zinc-600 leading-relaxed flex items-start gap-2">
+                  <Users className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" aria-hidden="true" />
                   <span>
-                    Zespół Hajsoholik sprawdza warunki promocji i aktualizuje dane na bieżąco. Zanim
-                    złożysz wniosek, zweryfikuj regulamin bezpośrednio u banku.
+                    Redakcja Hajsoholik bada regulaminy bankowe. Przed złożeniem wniosku zweryfikuj
+                    aktualne warunki bezpośrednio na stronie banku.
                   </span>
                 </p>
-                <a
-                  href={promoPath(promo)}
-                  className="inline-flex items-center gap-1 text-[12px] font-bold text-[#007B46] mt-3 hover:underline"
-                >
-                  Pełna strona promocji z regulaminem{' '}
-                  <ArrowRight className="w-3 h-3" aria-hidden="true" />
-                </a>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="bg-zinc-900 text-white rounded-[16px] p-5">
-                <p className="text-xs uppercase tracking-widest font-bold text-zinc-400">
-                  Kalkulator zysku
+              {/* Kalkulator zysku */}
+              <div className="bg-zinc-900 text-white rounded-2xl p-5 shadow-xs">
+                <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-400">
+                  Kalkulator zysku netto
                 </p>
-                <div className="mt-3 space-y-3 text-sm">
+                <div className="mt-3 space-y-2.5 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Premia</span>
-                    <span className="font-bold text-[#00C26E]">+{promo.bonus} zł</span>
+                    <span className="text-zinc-400">Premia brutto</span>
+                    <span className="font-semibold text-emerald-400">+{promo.bonus} zł</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-zinc-400">Koszty (np. karta)</span>
@@ -228,67 +221,65 @@ export function DetailModal({
                         type="number"
                         value={costInput}
                         onChange={(e) => setCostInput(Number(e.target.value))}
-                        className="w-16 bg-zinc-800 border border-zinc-700 rounded-full px-2 py-1 text-white text-sm text-right"
+                        className="w-14 bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-0.5 text-white text-xs text-right outline-none"
                         aria-label="Koszty w złotych"
                       />
                       <span>zł</span>
                     </div>
                   </div>
-                  <div className="h-px bg-zinc-800" />
-                  <div className="flex justify-between text-[16px]">
-                    <span className="font-bold">Na czysto</span>
-                    <span className="font-black text-[20px] text-white">
+                  <div className="h-px bg-zinc-800 my-2" />
+                  <div className="flex justify-between items-baseline">
+                    <span className="font-medium text-zinc-300">Zysk na czysto</span>
+                    <span className="font-bold text-xl text-white tabular-nums">
                       {promo.bonus - costInput} zł
                     </span>
                   </div>
-                  <p className="text-[11px] text-zinc-400">ROI: {roi} zł / h pracy</p>
+                  <p className="text-[11px] text-zinc-400">ROI: ~{roi} zł / godzinę pracy</p>
                 </div>
+
                 <a
-                  href={bankPromoUrl(promo.bank) || promoPath(promo)}
-                  target={bankPromoUrl(promo.bank) ? '_blank' : undefined}
-                  rel={bankPromoUrl(promo.bank) ? 'noopener' : undefined}
-                  className="w-full mt-5 h-11 rounded-full bg-[#007B46] text-white font-black text-sm hover:bg-[#006b3e] transition flex items-center justify-center gap-2"
+                  href={promo.url || promoPath(promo)}
+                  target={promo.url ? '_blank' : undefined}
+                  rel={promo.url ? 'noopener' : undefined}
+                  className="w-full mt-4 h-10 rounded-xl bg-white text-zinc-900 font-semibold text-xs hover:bg-zinc-100 active:scale-[0.98] transition flex items-center justify-center gap-1.5 shadow-xs"
                 >
-                  {bankPromoUrl(promo.bank) ? 'Regulamin i warunki u banku' : 'Zobacz promocję'}{' '}
-                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                  {ctaLabel(promo)} <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </a>
                 <a
                   href={promoPath(promo)}
-                  className="block mt-2 w-full h-9 rounded-full border border-zinc-700 text-white text-[12px] font-bold hover:bg-zinc-800 transition flex items-center justify-center"
+                  className="block mt-2 w-full h-8 rounded-xl border border-zinc-800 text-zinc-300 text-[11px] font-medium hover:bg-zinc-800 hover:text-white transition flex items-center justify-center"
                 >
-                  Pełna strona promocji
+                  Dedykowana strona z regulaminem
                 </a>
-                <p className="text-[10px] text-zinc-400 text-center mt-2">
-                  Link afiliacyjny • wspierasz Hajsoholik
-                </p>
               </div>
 
-              <div className="bg-white border border-zinc-200 rounded-[16px] p-4">
-                <p className="text-xs font-bold">Szczegóły</p>
-                <div className="mt-3 space-y-2 text-[13px]">
+              {/* Parametry */}
+              <div className="bg-white border border-black/[0.08] rounded-2xl p-4 shadow-xs">
+                <p className="text-xs font-semibold text-zinc-900 mb-2.5">Parametry oferty</p>
+                <div className="space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Trudność</span>
-                    <span className="font-semibold">{promo.difficulty}</span>
+                    <span className="font-medium text-zinc-900">{promo.difficulty}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">Czas</span>
-                    <span className="font-semibold flex items-center gap-1">
-                      <Clock className="w-3 h-3" aria-hidden="true" />
+                    <span className="text-zinc-500">Czas na wykonanie</span>
+                    <span className="font-medium text-zinc-900 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-zinc-400" aria-hidden="true" />
                       {promo.time}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">BIK</span>
-                    <span className={promo.bezBIK ? 'text-[#007B46] font-bold' : 'text-red-700'}>
-                      {promo.bezBIK ? 'bez BIK' : 'sprawdza BIK'}
+                    <span className="text-zinc-500">Weryfikacja BIK</span>
+                    <span
+                      className={`font-medium ${promo.bezBIK ? 'text-emerald-700' : 'text-zinc-700'}`}
+                    >
+                      {promo.bezBIK ? 'brak weryfikacji' : 'wymagana'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">Zdolność</span>
-                    <span
-                      className={promo.bezWplywu ? 'text-[#007B46] font-bold' : 'text-zinc-700'}
-                    >
-                      {promo.bezWplywu ? 'bez wpływu' : 'wpływa'}
+                    <span className="text-zinc-500">Wpływ na zdolność</span>
+                    <span className="font-medium text-zinc-900">
+                      {promo.bezWplywu ? 'brak wpływu' : 'wpływa'}
                     </span>
                   </div>
                 </div>
@@ -297,6 +288,6 @@ export function DetailModal({
           </div>
         </div>
       </div>
-    </div>
+    </dialog>
   )
 }

@@ -84,7 +84,6 @@ const jsonLd = [
   path="/"
   jsonLd={jsonLd}
   bodyClass="bg-[#F8F9FC]"
-  bare
   showFreshness
 >
   <HajsoholikApp client:load />
@@ -92,82 +91,79 @@ const jsonLd = [
   <!-- Metodologia i autor (E-E-A-T / content-effort) -->
   <div class="max-w-[1440px] mx-auto px-4 md:px-6 py-10">
     <div class="grid md:grid-cols-2 gap-6">
-      <section aria-labelledby="jak-dzialamy" class="bg-white rounded-[16px] border border-zinc-100 p-6">
-        <h2 id="jak-dzialamy" class="text-[18px] font-black">Jak działamy i skąd bierzemy oferty</h2>
-        <p class="text-[14px] text-zinc-600 leading-relaxed mt-3">
+      <section aria-labelledby="jak-dzialamy" class="bg-white rounded-2xl border border-black/[0.08] p-6 shadow-xs">
+        <h2 id="jak-dzialamy" class="text-base font-semibold text-zinc-900">Jak działamy i skąd bierzemy oferty</h2>
+        <p class="text-xs text-zinc-600 leading-relaxed mt-3">
           Hajsoholik weryfikuje regulaminy promocji bankowych w Polsce (mBank, PKO, Santander, ING,
           BNP Paribas, Nest Bank, VeloBank, Pekao i inne). Dla każdej oferty podajemy maksymalną premię z
           regulaminu, warunki, czas realizacji i ROI w złotych za godzinę pracy. Baza promocji jest aktualizowana
           na bieżąco — ostatnia aktualizacja: {site.updatedAt}.
         </p>
-        <p class="text-[14px] text-zinc-600 leading-relaxed mt-3">
+        <p class="text-xs text-zinc-600 leading-relaxed mt-2.5">
           ROI liczymy jako stosunek premii do realnego czasu pracy (wniosek online, wymagane transakcje, wpływy).
           Wzór: ROI = (premia − koszty) ÷ czas pracy w godzinach. Dla programów rozłożonych w czasie
-          (np. premiowych planów 5-miesięcznych) uwzględniamy całość warunków i okres wypłaty — dlatego ROI
-          bywa niższy niż sama premia. Oferty oznaczone „bez BIK" nie wymagają weryfikacji w biurze informacji
-          kredytowej. Ranking premiuje najwyższe premie i najlepszy stosunek zysku do nakładu pracy. Każda
-          promocja ma dedykowaną stronę z pełnymi warunkami, terminem i haczykami do regulaminu.
+          (np. premiowych planów 5-miesięcznych) uwzględniamy całość warunków i okres wypłaty.
         </p>
       </section>
-      <section aria-labelledby="o-redakcji" class="bg-white rounded-[16px] border border-zinc-100 p-6">
-        <h2 id="o-redakcji" class="text-[18px] font-black">O redakcji</h2>
-        <p class="text-[14px] text-zinc-600 leading-relaxed mt-3 flex items-center gap-3">
-          <span class="w-10 h-10 rounded-full bg-[#00C26E] text-white flex items-center justify-center font-black shrink-0" aria-hidden="true">H</span>
-          <span>Redakcja Hajsoholik specjalizuje się w porównywaniu promocji bankowych i produktów finansowych w
-          Polsce. Zespół testuje oferty, weryfikuje regulaminy i publikuje aktualne dane premiowe.</span>
-        </p>
-        <p class="text-[13px] text-zinc-500 mt-4">
+      <section aria-labelledby="o-redakcji" class="bg-white rounded-2xl border border-black/[0.08] p-6 shadow-xs">
+        <h2 id="o-redakcji" class="text-base font-semibold text-zinc-900">O redakcji</h2>
+        <div class="text-xs text-zinc-600 leading-relaxed mt-3 flex items-start gap-3">
+          <span class="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs" aria-hidden="true">H</span>
+          <p>Redakcja Hajsoholik specjalizuje się w porównywaniu promocji bankowych i produktów finansowych w
+          Polsce. Zespół testuje oferty, weryfikuje regulaminy i publikuje aktualne dane premiowe.</p>
+        </div>
+        <p class="text-[11px] text-zinc-400 mt-4 leading-relaxed">
           Hajsoholik nie jest doradcą finansowym. Informacje mają charakter poglądowy — przed skorzystaniem z
-          oferty sprawdź regulamin banku. Serwis może otrzymywać prowizje z linków afiliacyjnych.
+          oferty sprawdź regulamin banku. Serwis może otrzymywać prowizje z linków partnerskich.
         </p>
       </section>
     </div>
   </div>
 
-  <!-- Tabela porównawcza TOP promocji (AI-SEO: porównania = najczęściej cytowany format) -->
+  <!-- Tabela porównawcza TOP promocji -->
   <div class="max-w-[1440px] mx-auto px-4 md:px-6 pb-10">
-    <section aria-labelledby="top-tabela-heading" class="bg-white rounded-[16px] border border-zinc-100 p-6">
-      <h2 id="top-tabela-heading" class="text-[18px] font-black">TOP promocje bankowe 2026 — porównanie</h2>
-      <p class="text-[13px] text-zinc-500 mt-1">
+    <section aria-labelledby="top-tabela-heading" class="bg-white rounded-2xl border border-black/[0.08] p-6 shadow-xs">
+      <h2 id="top-tabela-heading" class="text-base font-semibold text-zinc-900">TOP promocje bankowe 2026 — porównanie</h2>
+      <p class="text-xs text-zinc-500 mt-1">
         Najwyżej premiowane, aktualne oferty. Dane z regulaminów banków, stan na {site.updatedAt}.
       </p>
       <div class="overflow-x-auto mt-4">
-        <table class="w-full text-left text-[13px]">
+        <table class="w-full text-left text-xs">
           <thead>
-            <tr class="text-zinc-500 text-[11px] uppercase tracking-widest border-b border-zinc-200">
-              <th scope="col" class="py-2 pr-3 font-bold">Promocja</th>
-              <th scope="col" class="py-2 pr-3 font-bold">Bank</th>
-              <th scope="col" class="py-2 pr-3 font-bold">Kategoria</th>
-              <th scope="col" class="py-2 pr-3 font-bold text-right">Premia</th>
-              <th scope="col" class="py-2 pr-3 font-bold text-right">ROI</th>
-              <th scope="col" class="py-2 pr-3 font-bold">Czas</th>
-              <th scope="col" class="py-2 font-bold">BIK</th>
+            <tr class="text-zinc-400 text-[11px] uppercase tracking-wider border-b border-zinc-100">
+              <th scope="col" class="py-2.5 pr-3 font-semibold">Promocja</th>
+              <th scope="col" class="py-2.5 pr-3 font-semibold">Bank</th>
+              <th scope="col" class="py-2.5 pr-3 font-semibold">Kategoria</th>
+              <th scope="col" class="py-2.5 pr-3 font-semibold text-right">Premia</th>
+              <th scope="col" class="py-2.5 pr-3 font-semibold text-right">ROI</th>
+              <th scope="col" class="py-2.5 pr-3 font-semibold">Czas</th>
+              <th scope="col" class="py-2.5 font-semibold">BIK</th>
             </tr>
           </thead>
           <tbody>
             {topPromos.map((promo) => (
-              <tr class="border-b border-zinc-100 last:border-0">
-                <td class="py-3 pr-3">
-                  <a href={promoPath(promo)} class="font-semibold hover:text-[#007B46] hover:underline">
+              <tr class="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition">
+                <td class="py-3 pr-3 font-medium text-zinc-900">
+                  <a href={promoPath(promo)} class="hover:underline">
                     {promo.title}
                   </a>
                 </td>
-                <td class="py-3 pr-3 whitespace-nowrap">{promo.bank}</td>
-                <td class="py-3 pr-3 whitespace-nowrap">{promo.category}</td>
-                <td class="py-3 pr-3 text-right font-black whitespace-nowrap">
+                <td class="py-3 pr-3 text-zinc-600 whitespace-nowrap">{promo.bank}</td>
+                <td class="py-3 pr-3 text-zinc-500 whitespace-nowrap">{promo.category}</td>
+                <td class="py-3 pr-3 text-right font-semibold text-zinc-900 tabular-nums whitespace-nowrap">
                   {promo.bonus.toLocaleString('pl-PL')} zł
                 </td>
-                <td class="py-3 pr-3 text-right text-[#007B46] font-semibold whitespace-nowrap">
-                  {promo.roi} zł/h
+                <td class="py-3 pr-3 text-right text-emerald-700 font-semibold tabular-nums whitespace-nowrap">
+                  ~{promo.roi} zł/h
                 </td>
-                <td class="py-3 pr-3 whitespace-nowrap">{promo.time}</td>
+                <td class="py-3 pr-3 text-zinc-500 whitespace-nowrap">{promo.time}</td>
                 <td class="py-3">
                   <span
                     class:list={[
-                      'text-[11px] px-2 py-0.5 rounded-full font-bold',
+                      'text-[10px] px-2 py-0.5 rounded-md font-medium',
                       promo.bezBIK
-                        ? 'bg-[#6C5CE7]/10 text-[#5A4BD6]'
-                        : 'bg-red-50 text-red-700',
+                        ? 'bg-zinc-100 text-zinc-700'
+                        : 'bg-zinc-100 text-zinc-500',
                     ]}
                   >
                     {promo.bezBIK ? 'bez BIK' : 'sprawdza BIK'}
