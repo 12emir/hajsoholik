@@ -1,5 +1,6 @@
 ---
 import { primaryNav } from '../data/nav'
+import { HeaderNav } from './HeaderNav'
 import MobileCategoryNav from './MobileCategoryNav.astro'
 
 interface Props {
@@ -13,9 +14,9 @@ const navItems = primaryNav
 <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:rounded-full focus:shadow-lg">
   Przejdź do treści
 </a>
-<header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-zinc-100">
+<header class="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-zinc-200/80 shadow-2xs">
   <div class="max-w-[1440px] mx-auto px-4 md:px-6 h-[68px] flex items-center justify-between gap-4">
-    <div class="flex items-center gap-6 md:gap-10">
+    <div class="flex items-center gap-6 md:gap-8 lg:gap-10">
       <a href="/" class="flex items-center gap-2.5" aria-label="Hajsoholik — strona główna">
         <span class="w-8 h-8 rounded-xl bg-zinc-900 flex items-center justify-center text-white font-bold text-[15px] shadow-sm tracking-tight" aria-hidden="true">H</span>
         <span class="font-bold text-[17px] tracking-tight text-zinc-900">Hajsoholik</span>
@@ -31,7 +32,7 @@ const navItems = primaryNav
                     'px-3.5 py-1.5 rounded-full transition-colors',
                     currentPath === item.href
                       ? 'text-zinc-900 font-semibold bg-zinc-100 shadow-xs'
-                      : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50',
+                      : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/70',
                   ]}
                 >
                   {item.label}
@@ -39,20 +40,32 @@ const navItems = primaryNav
               </li>
             ))
           }
+          <li>
+            <a
+              href="https://turbopromki.pl/"
+              target="_blank"
+              rel="noopener"
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full font-semibold text-amber-900 bg-amber-50 border border-amber-300/80 hover:bg-amber-100 transition shadow-2xs ml-1"
+            >
+              <span>Turbopromki</span>
+              <span class="text-amber-700 text-xs">↗</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </div>
     <div class="flex items-center gap-3">
-      <div class="hidden sm:flex items-center gap-2 text-xs text-zinc-500 font-medium">
+      <div class="hidden xl:flex items-center gap-2 text-xs text-zinc-500 font-medium">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true"></span>
-        <span>Zweryfikowano: 11 paź 2026</span>
+        <span>Zweryfikowano: 12 paź 2026</span>
       </div>
       <a
         href="/kontakt"
-        class="text-xs font-semibold px-3 py-1.5 rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition"
+        class="hidden sm:inline-flex text-xs font-semibold px-3 py-1.5 rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition"
       >
         Kontakt
       </a>
+      <HeaderNav client:load currentPath={currentPath} />
     </div>
   </div>
 </header>
