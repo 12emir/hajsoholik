@@ -7,4 +7,5 @@ export const primaryNav = [
   { label: 'Karty', href: '/kategoria/karty-kredytowe' },
   { label: 'Krypto', href: '/kategoria/krypto' },
   { label: 'Kończące się', href: '/konczace-sie' },
+  { label: 'Blog', href: '/blog' },
 ] as const
