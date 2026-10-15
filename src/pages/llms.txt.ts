@@ -1,8 +1,9 @@
+import { getCollection } from 'astro:content'
 import type { APIRoute } from 'astro'
 import { PROMOTIONS, deadlineHuman, promoPath, statusOf } from '../data/promotions'
 import { site } from '../data/site'
 
-export const GET: APIRoute = () => {
+export const GET: APIRoute = async () => {
   // Status wyliczany z daty, tak samo jak na stronach — llms.txt nie może
   // powtarzać nieaktualnego snapshotu z importu danych.
   const now = new Date(`${site.buildDate}T12:00:00+02:00`)
@@ -20,6 +21,14 @@ export const GET: APIRoute = () => {
       (p) =>
         `- [${p.bank} — ${p.title}](${site.url}${promoPath(p)}): premia ${p.bonus} zł | koszt ${p.cost} zł | ROI ${p.roi} zł/h | czas ${p.time} | termin ${deadlineHuman(p.deadlineDate)} | status ${statusOf(p.deadlineDate, now)} | trudność ${p.difficulty} | bez BIK: ${p.bezBIK ? 'tak' : 'nie'} | weryfikacja ${p.verifiedAt}`,
     )
+    .join('\n')
+
+  // Blog: szkice (draft: true) nie trafiają do llms.txt.
+  const blogPosts = (await getCollection('blog', ({ data }) => !data.draft)).sort((a, b) =>
+    b.data.publishedAt.localeCompare(a.data.publishedAt),
+  )
+  const blogLines = blogPosts
+    .map((post) => `- [${post.data.title}](${site.url}/blog/${post.id}): ${post.data.description}`)
     .join('\n')
 
   const body = `# Hajsoholik.pl
@@ -43,11 +52,19 @@ export const GET: APIRoute = () => {
 - [Ankiety/Aplikacje](${site.url}/kategoria/ankiety-aplikacje)
 - [Promocje kończące się](${site.url}/konczace-sie)
 
+## Porównywarki i rankingi produktów finansowych (SSG)
+- [Ranking kredytów gotówkowych 2026](${site.url}/kredyty-gotowkowe) — porównanie rat, prowizji i RRSO
+- [Ranking lokat bankowych 2026](${site.url}/lokaty-bankowe) — oprocentowanie i zysk netto
+- [Pożyczki pozabankowe i chwilówki 2026](${site.url}/pozyczki-chwilowki) — pierwsza za 0 zł, wypłata online
+
 ## Oferty (${activePromos.length} — dane do porównania programowego)
 ${offerLines}
 
 ## Dedykowane strony promocji (${activePromos.length})
 ${promoLines}
+
+## Blog (poradniki)
+${blogLines}
 
 ## Informacje
 - [O redakcji i metodzie weryfikacji](${site.url}/o-redakcji)
