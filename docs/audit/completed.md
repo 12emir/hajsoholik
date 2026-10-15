@@ -41,3 +41,6 @@ Bramki lokalne po zmianach: `pnpm typecheck` 0 błędów · `pnpm lint` — pozo
 | Blog `/blog` | content collection, indeks, `/blog/[slug]`, nav, llms.txt; 4 poradniki opublikowane + 1 szkic `draft:true` (podatek 2000 zł — przed publikacją konsultacja z doradcą) | commit `f47a280`; Lighthouse `/blog` i artykuł 99/100/100/100; 0 martwych linków `/promocja/`, 0 linków afiliacyjnych w treści |
 | Comperia (audyt obcej pracy) | COM-001..011: klucz API → `.env.local`, zmyślone badge'y i obietnice RRSO/„0% prowizji" usunięte, tytuły ≤62, badge z danych, a11y 100, lint | commit `493b4f0`; Lighthouse kredyty/lokaty/chwilówki 99/100/100/100; `pnpm lint` = 2 pre-existing (HeaderNav) |
 | Push | `42acfbd..493b4f0` → `origin/master` | produkcja **bez zmian** (deploy nadal wstrzymany na życzenie właściciela) |
+
+## Iteracja 3 (2026-10-15, sesja PO)
+- KRED-301 ✅ RRSO obliczana z danych ofert kg (IRR z raty/kosztu, kwota z linku) — 25/25 ofert na /kredyty-gotowkowe, stopka metodologiczna (wartość orientacyjna). Verified live; LH 100/100/100/100/100. Commit `ca25e2d`, deploy READY.
