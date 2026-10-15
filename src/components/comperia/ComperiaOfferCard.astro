@@ -1,4 +1,6 @@
 ---
+import { computeRrso } from '../../data/comperia'
+
 interface Props {
   offer: {
     id_oferty: string
@@ -43,6 +45,7 @@ const minusyList = Array.isArray(offer.minusy)
     : []
 
 const logoSrc = offer.logotyp?.startsWith('//') ? `https:${offer.logotyp}` : offer.logotyp
+const rrso = categoryCode === 'kg' ? computeRrso(offer as never) : null
 ---
 
 <article class={`relative flex flex-col justify-between rounded-2xl border bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-all hover:border-zinc-400 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] ${badge ? 'border-emerald-300 ring-1 ring-emerald-300/50' : 'border-zinc-300'}`}>
@@ -81,13 +84,19 @@ const logoSrc = offer.logotyp?.startsWith('//') ? `https:${offer.logotyp}` : off
     </div>
 
     <!-- Parametry oferty -->
-    <div class="grid grid-cols-2 gap-3 py-4 sm:grid-cols-4">
+    <div class="grid grid-cols-2 gap-3 py-4 sm:grid-cols-4 lg:grid-cols-5">
       {categoryCode === 'kg' && (
         <>
           <div class="rounded-xl bg-emerald-50/60 p-2.5 border border-emerald-100">
             <span class="block text-xs font-medium text-emerald-800">Rata (10k / 36m)</span>
             <span class="text-lg font-extrabold text-emerald-700">{offer.rata || '—'} zł</span>
           </div>
+          {rrso !== null && (
+            <div class="rounded-xl bg-zinc-50 p-2.5">
+              <span class="block text-xs font-medium text-zinc-600">RRSO (obliczona)</span>
+              <span class="text-base font-bold text-zinc-900">{rrso.toFixed(2).replace('.', ',')}%</span>
+            </div>
+          )}
           <div class="rounded-xl bg-zinc-50 p-2.5">
             <span class="block text-xs font-medium text-zinc-600">Oprocentowanie</span>
             <span class="text-base font-bold text-zinc-900">{offer.oprocentowanie || '—'}%</span>

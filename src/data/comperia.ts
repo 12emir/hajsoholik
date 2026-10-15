@@ -30,3 +30,25 @@ export function getComperiaCategory(code: string): ComperiaCategory {
 export function getComperiaSyncedAt(): string | null {
   return (catalog as { syncedAt?: string }).syncedAt ?? null
 }
+
+/**
+ * RRSO obliczone z danych oferty: kwota z linku (kg: 10 000 zł), okres n = (kwota+koszt)/rata,
+ * IRR miesięczny z kredytu równoratowego, RRSO = (1+i)^12 − 1. Null, gdy danych brak.
+ */
+export function computeRrso(offer: ComperiaOffer): number | null {
+  const kwota = Number(offer.link.match(/kwota_kredytu_=(\d+)/)?.[1])
+  const rata = Number(offer.rata)
+  const koszt = Number(offer.koszt_calkowity)
+  if (!Number.isFinite(kwota) || !Number.isFinite(rata) || rata <= 0 || !Number.isFinite(koszt)) return null
+  const n = Math.round((kwota + koszt) / rata)
+  if (n < 1) return null
+  let lo = 0
+  let hi = 1
+  for (let k = 0; k < 100; k++) {
+    const mid = (lo + hi) / 2
+    const pv = (rata * (1 - (1 + mid) ** -n)) / mid
+    if (pv > kwota) lo = mid
+    else hi = mid
+  }
+  return ((1 + (lo + hi) / 2) ** 12 - 1) * 100
+}
