@@ -87,3 +87,41 @@ Brak w odpowiedzi: `strict-transport-security`, `x-content-type-options`,
    jako agregat opinii użytkowników (self-serving review).
    → Fix: usunięte `aggregateRating`, zostaje jawny `Review` ekspercki.
    Sprawdzaj, **co pole znaczy**, nie tylko czy się waliduje.
+
+---
+
+## Aktualizacja 2026-10-15 (iteracja 2 — SEO techniczne + AI SEO na produkcji)
+
+| Pole | Stan |
+|---|---|
+| Repo źródłowe produkcji | **`~/apps/hajsoholik`** (potwierdzone: `/bank` → 404, brak markerów `AppDownloadCTA`/`RoiHint`, obecny Turbopromki) |
+| Konflikt artefaktów | `zordon-hub-repos/hajsoholik-web` to **drugi, rozjechany klon** (ma `/bank/*`, redirect Binance, `AppDownloadCTA`) — produkcja go **nie używa**; 8 commitów repo produkcyjnego jest niepushowanych |
+| Build produkcyjny | z 2026-10-11 (liczniki „Zostało N dni" i `dateModified` zgodne z tą datą); `sitemap lastmod` = 2026-08-14 |
+| Lighthouse (mobile, produkcja) | `/` → Perf 100 · A11y 92 · BP 96 · **SEO 100** · **Agentic Browsing 33**; promocja → 100/100/100/**100**/**67**; LCP 1.2–1.6 s, CLS 0, TBT 0 ms |
+| SEO-001 | **Regresja czasowa:** `priceValidUntil` 2026-10-14 (wczoraj) znów na produkcji → **SEO-201** |
+| SEO-002 | `aggregateRating` **0/33** — fix utrzymany |
+| Indeksacja / ruch | **UNVERIFIED** — na produkcji nie ma GA4 ani `gtag` → **SEO-207** |
+
+### Pułapki zmierzone w iteracji 2
+
+1. **Lighthouse CLI pada, ale API programowe działa** — wbrew wpisowi z iteracji 1.
+   Działa: własny Chrome `--headless=new` na **losowym, sprawdzonym porcie** z izolowanym
+   `--user-data-dir`, strażnik własności przez `lsof` (profil w uchwytach PID-a z portu),
+   potem `import('…/lighthouse/core/index.js')` z `{ port }`. Kategoria **`agentic-browsing`**
+   wychodzi tylko z API programowego i to ona pokazała `llms-txt = 0`.
+   → Nie wpisywać CWV do backlogu jako `BLOKADA`, dopóki ta ścieżka nie padnie.
+
+2. **Stan zależny od czasu w module danych = dwa różne światy** (`promotions.ts:1030-1045`):
+   ten sam kod liczy `status`/`deadlineLabel` przy buildzie (SSR) i przy imporcie w wyspie
+   React (klient). Efekt: **React #418 hydration mismatch** na home (zmierzone Lighthouse
+   `errors-in-console`) + ta sama oferta raz „Aktywna", raz „Archiwalna".
+   → Dane niosą **datę**, nie etykietę; czas licz w komponencie, w jednym miejscu.
+
+3. **Guard „data ≥ dzień builda" nie jest zabezpieczeniem, tylko odroczeniem**:
+   dopóki deploy jest ręczny, każda poprawna w dniu builda data stanie się kłamstwem
+   w produkcji. Bramka buildowa (build czerwony przy wygasłej ofercie „Aktywnej")
+   jest tym, co faktycznie zamyka klasę błędu.
+
+4. **`llms.txt` to plik markdown, nie lista URL-i** — Lighthouse `llms-txt` sprawdza
+   obecność linków w formacie `[tekst](url)`; gołe adresy dają 0 i ciągną w dół
+   Agentic Browsing (home 33/100).
