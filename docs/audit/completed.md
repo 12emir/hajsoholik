@@ -33,3 +33,11 @@ restauracja `SiteHeader`/`Footer`/`CookieBanner` po usunięciu `bare`.
 Bramki lokalne po zmianach: `pnpm typecheck` 0 błędów · `pnpm lint` — pozostały tylko
 4 błędy sprzed sesji w `src/components/HeaderNav.tsx` (potwierdzone na wersji z HEAD) ·
 `pnpm test` brak plików testowych · `pnpm build` 35 stron + 20/20 kart OG.
+
+## Blog + Comperia — 2026-10-15 (sesja PO)
+
+| Zakres | Co | Dowód |
+|---|---|---|
+| Blog `/blog` | content collection, indeks, `/blog/[slug]`, nav, llms.txt; 4 poradniki opublikowane + 1 szkic `draft:true` (podatek 2000 zł — przed publikacją konsultacja z doradcą) | commit `f47a280`; Lighthouse `/blog` i artykuł 99/100/100/100; 0 martwych linków `/promocja/`, 0 linków afiliacyjnych w treści |
+| Comperia (audyt obcej pracy) | COM-001..011: klucz API → `.env.local`, zmyślone badge'y i obietnice RRSO/„0% prowizji" usunięte, tytuły ≤62, badge z danych, a11y 100, lint | commit `493b4f0`; Lighthouse kredyty/lokaty/chwilówki 99/100/100/100; `pnpm lint` = 2 pre-existing (HeaderNav) |
+| Push | `42acfbd..493b4f0` → `origin/master` | produkcja **bez zmian** (deploy nadal wstrzymany na życzenie właściciela) |
