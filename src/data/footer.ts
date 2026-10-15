@@ -4,10 +4,10 @@ export const footerCategories = [
   { label: 'Konta osobiste', href: '/kategoria/konta-osobiste' },
   { label: 'Konta firmowe', href: '/kategoria/konta-firmowe' },
   { label: 'Karty kredytowe', href: '/kategoria/karty-kredytowe' },
+  { label: 'Kredyty gotówkowe', href: '/kredyty-gotowkowe' },
+  { label: 'Lokaty bankowe', href: '/lokaty-bankowe' },
+  { label: 'Pożyczki chwilówki', href: '/pozyczki-chwilowki' },
   { label: 'Oszczędnościowe', href: '/kategoria/oszczednosciowe' },
-  { label: 'Polecenia', href: '/kategoria/polecenia' },
-  { label: 'Cashback', href: '/kategoria/cashback' },
-  { label: 'Ankiety / aplikacje', href: '/kategoria/ankiety-aplikacje' },
   { label: 'Krypto', href: '/kategoria/krypto' },
 ] as const
 

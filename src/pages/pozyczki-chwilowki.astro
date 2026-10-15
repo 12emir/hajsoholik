@@ -1,0 +1,60 @@
+---
+import ComperiaOfferCard from '../components/comperia/ComperiaOfferCard.astro'
+import { getComperiaCategory } from '../data/comperia'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const categoryChw = getComperiaCategory('chw')
+const categoryPzb = getComperiaCategory('pzb')
+const allOffers = [...categoryChw.offers, ...categoryPzb.offers]
+
+const title = 'Chwilówki i pożyczki pozabankowe 2026 | Hajsoholik'
+const description =
+  'Zestawienie szybkich pożyczek i chwilówek online. Sprawdź dostępną kwotę, okres spłaty, wymagane formalności i złóż wniosek przez internet.'
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/pozyczki-chwilowki"
+>
+  <main class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+    <!-- Breadcrumbs -->
+    <nav class="mb-6 flex items-center gap-2 text-xs text-zinc-500">
+      <a href="/" class="hover:text-zinc-900">Strona główna</a>
+      <span>/</span>
+      <span class="text-zinc-900 font-medium">Pożyczki pozabankowe</span>
+    </nav>
+
+    <!-- Header sekcji -->
+    <header class="mb-8 border-b border-zinc-200 pb-6">
+      <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 mb-3">
+        Weryfikacja online • {allOffers.length} aktywnych pożyczek
+      </div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl">
+        Pożyczki Pozabankowe i Chwilówki Online 2026
+      </h1>
+      <p class="mt-3 max-w-3xl text-base text-zinc-600">
+        Szybka gotówka na niespodziewane wydatki. Porównaj kwoty pożyczek, czas spłaty oraz wymogi formalne (dostępność bez zaświadczeń o dochodach).
+      </p>
+    </header>
+
+    <!-- Siatka ofert -->
+    <section class="space-y-4">
+      {
+        // COM-002/006: brak danych o kosztze/czasie wypłaty w API — żadnych badge'ów,
+        // dopóki nie ma podstawy danych (pozycja w tablicy nie jest rankingu).
+        allOffers.map((offer) => (
+          <ComperiaOfferCard offer={offer} categoryCode="chw" />
+        ))
+      }
+    </section>
+
+    <!-- Ostrzeżenie prawne / E-E-A-T -->
+    <footer class="mt-12 rounded-2xl bg-amber-50 p-6 text-xs text-amber-900 border border-amber-200">
+      <p class="font-semibold text-amber-950 mb-1">Odpowiedzialne pożyczanie:</p>
+      <p>
+        Pamiętaj, że pożyczka to zobowiązanie finansowe. Zaciągaj pożyczki wyłącznie wtedy, gdy masz pewność, że będziesz w stanie spłacić je w ustalonym terminie. Nieterminowa spłata wiąże się z dodatkowymi kosztami oraz wpisem do rejestrów dłużników (BIG, BIK, KRD).
+      </p>
+    </footer>
+  </main>
+</BaseLayout>

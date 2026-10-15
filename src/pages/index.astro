@@ -1,6 +1,7 @@
 ---
 import CookieBanner from '../components/CookieBanner.astro'
 import HajsoholikApp from '../components/app/HajsoholikApp'
+import FinanceRankingPromo from '../components/comperia/FinanceRankingPromo.astro'
 import { PROMOTIONS, type Promotion, promoPath, statusOf } from '../data/promotions'
 import { site } from '../data/site'
 import BaseLayout from '../layouts/BaseLayout.astro'
@@ -186,6 +187,7 @@ const jsonLd = [
 
   <!-- Kategorie (huby AI-SEO: fan-out z home do stron kategorii) -->
   <div class="max-w-[1440px] mx-auto px-4 md:px-6 pb-10">
+    <FinanceRankingPromo class="mb-6" />
     <section aria-labelledby="kategorie-heading" class="bg-white rounded-[16px] border border-zinc-100 p-6">
       <h2 id="kategorie-heading" class="text-[18px] font-black">Przeglądaj promocje wg kategorii</h2>
       <div class="flex flex-wrap gap-2 mt-4">

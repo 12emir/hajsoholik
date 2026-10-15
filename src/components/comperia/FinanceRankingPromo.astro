@@ -1,0 +1,43 @@
+---
+interface Props {
+  class?: string
+}
+
+const { class: className = '' } = Astro.props
+---
+
+<section class={`rounded-2xl border border-zinc-200 bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 text-white shadow-sm ${className}`}>
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div>
+      <div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 mb-2">
+        <span>Kalkulatory & Porównywarki</span>
+      </div>
+      <h2 class="text-xl font-bold text-white sm:text-2xl">
+        Szukasz kredytu, taniej pożyczki lub lokaty?
+      </h2>
+      <p class="mt-1 text-sm text-zinc-300 max-w-xl">
+        Sprawdź nasze rankingi produktów finansowych. Porównaj raty, prowizje, oprocentowanie i całkowity koszt — zanim podpiszesz umowę.
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2.5">
+      <a
+        href="/kredyty-gotowkowe"
+        class="inline-flex items-center rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-zinc-900 transition hover:bg-zinc-100"
+      >
+        Kredyty gotówkowe
+      </a>
+      <a
+        href="/lokaty-bankowe"
+        class="inline-flex items-center rounded-xl bg-white/10 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-white/20 border border-white/20"
+      >
+        Lokaty bankowe
+      </a>
+      <a
+        href="/pozyczki-chwilowki"
+        class="inline-flex items-center rounded-xl bg-white/10 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-white/20 border border-white/20"
+      >
+        Pożyczki chwilówki
+      </a>
+    </div>
+  </div>
+</section>
