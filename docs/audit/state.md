@@ -1,5 +1,20 @@
 # Stan audytu — Hajsoholik.pl
 
+## Snapshot 2026-10-15 (po naprawach P1–P3, przed deployem)
+
+| Pole | Wartość |
+|---|---|
+| Build | `pnpm build` = `astro build && node scripts/og-jpgs.mjs` → **35 stron** + 20/20 kart OG (JPEG 1200×630) |
+| Bramki | `typecheck` 0 błędów · `lint` 4 błędy sprzed sesji (`HeaderNav.tsx`) · `test` brak plików · prod nadal `2026-10-11` |
+| Oferty | 25 bankowych + 12 krypto; publikowane **19** (1 wygasła 2026-10-14 → archiwum z `Discontinued`) |
+| Sitemap | `sitemap-index.xml` + `sitemap-0.xml`: 34 URL-e, `lastmod` = `site.updatedAt` (2026-10-11) |
+| Lighthouse mobile | `/` 98/100/100/100 (Agentic 100) · `/promocja/biznest-konto-premia-do-3000-zl` 99/100/100/100 |
+| Analityka | GA4 `G-9M4RZG70M2` + Consent Mode v2; tag wyłącznie po zgodzie (zweryfikowane przez CDP) |
+| Nagłówki | `vercel.json`: nosniff, XFO, referrer-policy, permissions-policy, COOP, HSTS, cache sitemap/robots/llms — **wchodzą dopiero z deployem** |
+| Redirecty | 301: stary slug Binance, `/sitemap.xml` → `/sitemap-index.xml` (w `.vercel/output/config.json`) |
+| Treść | `docs/content/tematy-repozytorium-2026-10-15.md` (research forów + tiers tematów) |
+| Deploy | **nie wykonany** na życzenie właściciela; produkcja bez zmian |
+
 ## Snapshot 2026-10-01
 
 | Pole | Wartość |

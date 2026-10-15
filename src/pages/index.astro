@@ -1,21 +1,22 @@
 ---
 import CookieBanner from '../components/CookieBanner.astro'
 import HajsoholikApp from '../components/app/HajsoholikApp'
-import { PROMOTIONS, promoPath } from '../data/promotions'
+import { PROMOTIONS, type Promotion, promoPath, statusOf } from '../data/promotions'
 import { site } from '../data/site'
 import BaseLayout from '../layouts/BaseLayout.astro'
 
-const accountPromos = PROMOTIONS.filter(
-  (p) => p.category === 'Konta osobiste' && p.status !== 'Archiwalna',
-)
-const businessPromos = PROMOTIONS.filter(
-  (p) => p.category === 'Konta firmowe' && p.status !== 'Archiwalna',
-)
+// „Teraz" dla builda statycznego — dokładnie ten sam dzień, który dostaje wyspa React,
+// więc HTML i hydratacja mówią to samo (bez kłamstwa o terminie i bez React #418).
+const now = new Date(`${site.buildDate}T12:00:00+02:00`)
+const isActive = (promo: Promotion) => statusOf(promo.deadlineDate, now) !== 'Archiwalna'
+
+const accountPromos = PROMOTIONS.filter((p) => p.category === 'Konta osobiste' && isActive(p))
+const businessPromos = PROMOTIONS.filter((p) => p.category === 'Konta firmowe' && isActive(p))
 const minAccount = Math.min(...accountPromos.map((p) => p.bonus))
 const maxAccount = Math.max(...accountPromos.map((p) => p.bonus))
 const maxBusiness = Math.max(...businessPromos.map((p) => p.bonus))
 const topPromos = [...PROMOTIONS]
-  .filter((p) => p.status !== 'Archiwalna')
+  .filter(isActive)
   .sort((a, b) => b.bonus - a.bonus)
   .slice(0, 8)
 
@@ -66,8 +67,8 @@ const jsonLd = [
     '@type': 'ItemList',
     name: 'Promocje bankowe 2026',
     description: site.description,
-    numberOfItems: PROMOTIONS.filter((p) => p.status !== 'Archiwalna').length,
-    itemListElement: PROMOTIONS.filter((p) => p.status !== 'Archiwalna').map((promo, index) => ({
+    numberOfItems: PROMOTIONS.filter(isActive).length,
+    itemListElement: PROMOTIONS.filter(isActive).map((promo, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       name: `${promo.bonus} zł za promocję ${promo.bank} — ${promo.title}`,
@@ -79,14 +80,14 @@ const jsonLd = [
 ---
 
 <BaseLayout
-  title={site.title}
+  title="Promocje bankowe 2026 — premie za konto, karty | Hajsoholik"
   description={site.description}
   path="/"
   jsonLd={jsonLd}
   bodyClass="bg-[#F8F9FC]"
   showFreshness
 >
-  <HajsoholikApp client:load />
+  <HajsoholikApp client:load buildNow={site.buildDate} />
 
   <!-- Metodologia i autor (E-E-A-T / content-effort) -->
   <div class="max-w-[1440px] mx-auto px-4 md:px-6 py-10">
@@ -96,8 +97,13 @@ const jsonLd = [
         <p class="text-xs text-zinc-600 leading-relaxed mt-3">
           Hajsoholik weryfikuje regulaminy promocji bankowych w Polsce (mBank, PKO, Santander, ING,
           BNP Paribas, Nest Bank, VeloBank, Pekao i inne). Dla każdej oferty podajemy maksymalną premię z
-          regulaminu, warunki, czas realizacji i ROI w złotych za godzinę pracy. Baza promocji jest aktualizowana
-          na bieżąco — ostatnia aktualizacja: {site.updatedAt}.
+          regulaminu, warunki, czas realizacji i ROI w złotych za godzinę pracy. Każdą ofertę weryfikujemy
+          u źródła — ostatnia weryfikacja: <time datetime={site.updatedAt}>{site.updatedAt}</time>.
+        </p>
+        <p class="text-xs text-zinc-600 leading-relaxed mt-2.5">
+          Termin każdej oferty podajemy jako konkretną datę z regulaminu, a status wyliczamy na bieżąco —
+          dlatego strona nie pokaże jako aktywnej promocji, której termin już minął. Metodę opisujemy na
+          stronie <a href="/o-redakcji" class="underline hover:text-zinc-900">O redakcji i metodzie weryfikacji</a>.
         </p>
         <p class="text-xs text-zinc-600 leading-relaxed mt-2.5">
           ROI liczymy jako stosunek premii do realnego czasu pracy (wniosek online, wymagane transakcje, wpływy).
@@ -110,9 +116,10 @@ const jsonLd = [
         <div class="text-xs text-zinc-600 leading-relaxed mt-3 flex items-start gap-3">
           <span class="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs" aria-hidden="true">H</span>
           <p>Redakcja Hajsoholik specjalizuje się w porównywaniu promocji bankowych i produktów finansowych w
-          Polsce. Zespół testuje oferty, weryfikuje regulaminy i publikuje aktualne dane premiowe.</p>
+          Polsce. Zespół testuje oferty, weryfikuje regulaminy i publikuje aktualne dane premiowe.
+          Wydawcą serwisu jest {site.publisher}. <a href="/o-redakcji" class="underline hover:text-zinc-900">Jak weryfikujemy oferty</a>.</p>
         </div>
-        <p class="text-[11px] text-zinc-400 mt-4 leading-relaxed">
+        <p class="text-[11px] text-zinc-500 mt-4 leading-relaxed">
           Hajsoholik nie jest doradcą finansowym. Informacje mają charakter poglądowy — przed skorzystaniem z
           oferty sprawdź regulamin banku. Serwis może otrzymywać prowizje z linków partnerskich.
         </p>
@@ -130,7 +137,7 @@ const jsonLd = [
       <div class="overflow-x-auto mt-4">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="text-zinc-400 text-[11px] uppercase tracking-wider border-b border-zinc-100">
+            <tr class="text-zinc-500 text-[11px] uppercase tracking-wider border-b border-zinc-100">
               <th scope="col" class="py-2.5 pr-3 font-semibold">Promocja</th>
               <th scope="col" class="py-2.5 pr-3 font-semibold">Bank</th>
               <th scope="col" class="py-2.5 pr-3 font-semibold">Kategoria</th>
@@ -163,7 +170,7 @@ const jsonLd = [
                       'text-[10px] px-2 py-0.5 rounded-md font-medium',
                       promo.bezBIK
                         ? 'bg-zinc-100 text-zinc-700'
-                        : 'bg-zinc-100 text-zinc-500',
+                        : 'bg-zinc-100 text-zinc-600',
                     ]}
                   >
                     {promo.bezBIK ? 'bez BIK' : 'sprawdza BIK'}

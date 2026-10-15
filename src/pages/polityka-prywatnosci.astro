@@ -37,22 +37,35 @@ const description =
         </p>
         <ul class="list-disc pl-5 mt-2 space-y-1">
           <li>dane techniczne w logach serwera (adres IP, typ przeglądarki, czas wizyty, odwiedzone podstrony) — podstawą prawną jest art. 6 ust. 1 lit. f) RODO (prawnie uzasadniony interes, jakim jest zapewnienie bezpieczeństwa i stabilności serwisu);</li>
-          <li>dane przesłane przez Ciebie w formularzu kontaktowym (imię, adres e-mail, treść wiadomości) — podstawą prawną jest art. 6 ust. 1 lit. a) RODO (zgoda) oraz art. 6 ust. 1 lit. f) RODO (obsługa zapytań).</li>
+          <li>dane przesłane przez Ciebie w formularzu kontaktowym (imię, adres e-mail, treść wiadomości) — podstawą prawną jest art. 6 ust. 1 lit. a) RODO (zgodna) oraz art. 6 ust. 1 lit. f) RODO (obsługa zapytań);</li>
+          <li>dane pomiarowe Google Analytics 4 (identyfikator instalacji, przybliżona lokalizacja wywnioskowana z adresu IP, typ urządzenia i przeglądarki, źródło wizyty, odwiedzone podstrony) — wyłącznie po Twojej zgodzie, podstawą prawną jest art. 6 ust. 1 lit. a) RODO.</li>
         </ul>
       </section>
 
       <section>
         <h2 class="font-bold text-hj-text text-[17px] mb-2">3. Cookies i technologie lokalne</h2>
         <p>
-          Serwis używa wyłącznie niezbędnych plików cookies oraz pamięci lokalnej przeglądarki
-          (localStorage) — np. do zapamiętania Twojego postępu w warunkach promocji i ustawień filtrów.
-          Nie stosujemy cookies marketingowych, reklamowych ani profilowania bez Twojej zgody.
-          Pliki cookies niezbędne działają na podstawie art. 173 ust. 2 Prawa telekomunikacyjnego
-          (nie wymagają zgody); każde inne wykorzystanie cookies wymagałoby Twojej zgody.
+          Serwis używa niezbędnych plików cookies oraz pamięci lokalnej przeglądarki
+          (localStorage) — np. do zapamiętania Twojego postępu w warunkach promocji, ustawień filtrów
+          i Twojej decyzji o analityce. Pliki cookies niezbędne działają na podstawie art. 173 ust. 2
+          Prawa telekomunikacyjnego (nie wymagają zgody); każde inne wykorzystanie cookies wymaga
+          Twojej zgody.
         </p>
         <p class="mt-2">
-          Pamięć lokalną możesz w każdej chwili wyczyścić w ustawieniach przeglądarki — nie wpłynie to
-          na dostępność treści serwisu, a jedynie na zapamiętanie postępu.
+          <strong>Analityka (Google Analytics 4):</strong> po Twojej zgodzie ładujemy narzędzie Google
+          Analytics 4 (identyfikator G-9M4RZG70M2) i zapisujemy pliki cookies pomiarowe Google
+          (<code>_ga</code>, <code>_ga_*</code>, ważność do 12 miesięcy). Mierzymy w ten sposób
+          anonimowe statystyki: liczbę odwiedzin, źródło ruchu, przeglądane strony i kliknięcia w
+          linki do ofert. Podstawą prawną jest art. 6 ust. 1 lit. a) RODO (zgoda), a administratorem
+          danych pomiarowych jest Google Ireland Limited. <strong>Bez Twojej zgody tag analityczny nie
+          jest w ogóle uruchamiany</strong> — nie wysyłamy wtedy żadnych danych pomiarowych, także w
+          trybie bezcookiesowym (Consent Mode v2: wszystkie sygnały startują jako „denied").
+        </p>
+        <p class="mt-2">
+          Zgodę możesz wycofać w każdej chwili, czyszcząc pamięć lokalną i pliki cookies tej strony w
+          ustawieniach przeglądarki (wpis <code>hajsoholik_analytics_consent</code>) — po odświeżeniu
+          strony banner pojawi się ponownie. Wycofanie zgody nie wpływa na dostępność treści serwisu,
+          a jedynie na zapamiętanie postępu i pomiar ruchu.
         </p>
       </section>
 
@@ -61,17 +74,19 @@ const description =
         <p>
           Dane mogą być przekazywane podmiotom przetwarzającym je w naszym imieniu (tzw. podmioty
           przetwarzające): dostawca hostingu i infrastruktury (m.in. Vercel Inc. — hosting
-          statyczny serwisu), dostawca poczty e-mail oraz dostawcy narzędzi analitycznych, o ile
-          zostaną wdrożone. Wszyscy odbiorcy są zobowiązani umowami powierzenia przetwarzania.
-          Nie sprzedajemy danych osobowych i nie udostępniamy ich podmiotom trzecim w celach
-          marketingowych bez Twojej zgody.
+          statyczny serwisu), dostawca poczty e-mail oraz Google Ireland Limited (Google Analytics 4 —
+          wyłącznie po Twojej zgodzie). Wszyscy odbiorcy są zobowiązani umowami powierzenia
+          przetwarzania. Nie sprzedajemy danych osobowych i nie udostępniamy ich podmiotom trzecim w
+          celach marketingowych bez Twojej zgody.
         </p>
       </section>
 
       <section>
         <h2 class="font-bold text-hj-text text-[17px] mb-2">5. Okres przechowywania</h2>
         <p>
-          Logi serwera przechowywane są maksymalnie 12 miesięcy. Wiadomości z formularza
+          Logi serwera przechowywane są maksymalnie 12 miesięcy. Dane pomiarowe Google Analytics 4
+          przechowujemy przez 14 miesięcy (retencja ustawiona w usłudze), a pliki cookies pomiarowe
+          wygasają najpóźniej po 12 miesiącach. Wiadomości z formularza
           kontaktowego przechowujemy przez okres niezbędny do obsługi sprawy, nie dłużej niż
           24 miesiące od ostatniego kontaktu, chyba że dłuższy okres wynika z przepisów prawa.
         </p>

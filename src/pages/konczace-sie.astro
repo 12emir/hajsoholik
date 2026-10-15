@@ -1,30 +1,50 @@
 ---
-import { PROMOTIONS, promoPath } from '../data/promotions'
+import { PROMOTIONS, type Promotion, deadlineHuman, promoPath, statusOf } from '../data/promotions'
 import { site } from '../data/site'
 import BaseLayout from '../layouts/BaseLayout.astro'
 
+// Ten sam „teraz" co w reszcie builda — status wyliczamy z daty, nie z importu danych.
+const now = new Date(`${site.buildDate}T12:00:00+02:00`)
+
 const ending = [...PROMOTIONS]
-  .filter((p) => p.status !== 'Archiwalna')
-  .sort((a, b) => a.deadlineDays - b.deadlineDays)
+  .filter((p: Promotion) => statusOf(p.deadlineDate, now) !== 'Archiwalna')
+  .sort((a, b) => a.deadlineDate.localeCompare(b.deadlineDate))
   .slice(0, 10)
+
+const rows = ending.map((promo) => {
+  const status = statusOf(promo.deadlineDate, now)
+  return {
+    promo,
+    status,
+    statusClass:
+      status === 'Kończy się w 48h'
+        ? 'bg-red-50 text-red-700'
+        : status === 'Archiwalna'
+          ? 'bg-zinc-200 text-zinc-700'
+          : 'bg-[#007B46]/10 text-[#007B46]',
+  }
+})
+
+const [soonest] = ending
+const soonestLabel = soonest
+  ? `${deadlineHuman(soonest.deadlineDate)}: ${ending
+      .slice(0, 3)
+      .map((p) => `${p.bank} (${p.bonus} zł)`)
+      .join(', ')}`
+  : 'brak ofert z aktywnym terminem'
 
 const faq = [
   {
     q: 'Która promocja bankowa kończy się najszybciej?',
-    a: `Aktualnie najpilniejsze oferty to te z terminem do ${Math.max(...ending.map((p) => p.deadlineDays))} dni: ${ending
-      .slice(0, 3)
-      .map((p) => `${p.bank} (${p.bonus} zł)`)
-      .join(
-        ', ',
-      )}. Terminy liczymy z dat w regulaminach banków — lista poniżej jest sortowana od najkrótszego terminu. Po upływie daty oferta trafia do archiwum i znika z porównywarki.`,
+    a: `Aktualnie najpilniejsze oferty to te z terminem ${soonestLabel}. Daty końca pochodzą wprost z regulaminów banków — lista poniżej jest sortowana od najkrótszej daty. Po upływie terminu oferta trafia do archiwum (status „Archiwalna") i nie jest pokazywana jako aktywna.`,
   },
   {
     q: 'Czy warto czekać na nowe promocje, czy skorzystać z kończących się?',
     a: 'Promocje bankowe cyklicznie wracają (np. mBank i BNP odnawiają oferty co sezon), ale wysokość premii i warunki potrafią się zmieniać. Jeśli widzisz ofertę z wysoką premią i terminem w tym miesiącu, realizacja zajmuje zwykle 15–60 minut — warto działać przed końcem. Dołącz do naszej porównywarki, żeby nie przegapić odświeżeń.',
   },
   {
-    q: 'Jak Hajsoholik wylicza terminy promocji?',
-    a: 'Terminy pochodzą wprost z regulaminów i komunikatów banków. Na Hajsoholiku każda promocja ma datę końca (deadlineDate) — licznik dni jest przeliczany automatycznie przy każdej aktualizacji bazy (ostatnia: {site.updatedAt}). Dzięki temu widzisz realny czas, a nie przybliżony snapshot.',
+    q: 'Jak Hajsoholik ustala terminy promocji?',
+    a: `Terminy pochodzą wprost z regulaminów i komunikatów banków i podajemy je jako konkretne daty (bez liczników, które starzeją się w cache). Status oferty wyliczamy z tej daty i dnia, w którym widzisz stronę — ostatnia aktualizacja bazy: ${site.updatedAt}. Dzięki temu oferta po terminie nie jest pokazywana jako aktywna.`,
   },
 ]
 
@@ -70,11 +90,11 @@ const jsonLd = [
 ---
 
 <BaseLayout
-  title={`Promocje bankowe kończące się ${new Date().toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })} — najkrótsze terminy | Hajsoholik`}
+  title={`Kończące się promocje bankowe (${new Date(`${site.buildDate}T12:00:00+02:00`).toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })}) | Hajsoholik`}
   description={`${ending.length} promocji bankowych z najkrótszym terminem: ${ending
     .slice(0, 3)
     .map((p) => `${p.bank} ${p.bonus} zł`)
-    .join(', ')}. Terminy przeliczane z dat w regulaminach banków.`}
+    .join(', ')}. Daty z regulaminów banków, status wyliczany na bieżąco.`}
   path="/konczace-sie"
   jsonLd={jsonLd}
   showFreshness
@@ -93,8 +113,8 @@ const jsonLd = [
     <header class="bg-white rounded-[16px] border border-zinc-100 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
       <h1 class="text-[26px] md:text-[32px] font-black leading-tight">Promocje bankowe kończące się najszybciej</h1>
       <p class="text-[14px] text-zinc-600 leading-relaxed mt-4">
-        Aktualne oferty z najkrótszym terminem ważności, posortowane od najbardziej pilnych. Terminy liczymy
-        wprost z dat w regulaminach banków — aktualizacja bazy: {site.updatedAt}.
+        Aktualne oferty z najkrótszym terminem ważności, posortowane od najbardziej pilnych. Daty końca
+        pochodzą wprost z regulaminów banków; status wyliczamy z daty i dnia wyświetlenia — aktualizacja bazy: {site.updatedAt}.
       </p>
     </header>
 
@@ -113,7 +133,7 @@ const jsonLd = [
             </tr>
           </thead>
           <tbody>
-            {ending.map((promo) => (
+            {rows.map(({ promo, status, statusClass }) => (
               <tr class="border-b border-zinc-100 last:border-0">
                 <td class="py-3 pr-3">
                   <a href={promoPath(promo)} class="font-semibold hover:text-[#007B46] hover:underline">
@@ -127,15 +147,10 @@ const jsonLd = [
                 <td class="py-3 pr-3 text-right text-[#007B46] font-semibold whitespace-nowrap">
                   {promo.roi} zł/h
                 </td>
-                <td class="py-3 pr-3 whitespace-nowrap">{promo.deadlineLabel}</td>
+                <td class="py-3 pr-3 whitespace-nowrap">{deadlineHuman(promo.deadlineDate)}</td>
                 <td class="py-3">
-                  <span
-                    class:list={[
-                      'text-[11px] px-2 py-0.5 rounded-full font-bold',
-                      promo.deadlineDays <= 2 ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700',
-                    ]}
-                  >
-                    {promo.deadlineLabel}
+                  <span class:list={['text-[11px] px-2 py-0.5 rounded-full font-bold', statusClass]}>
+                    {status}
                   </span>
                 </td>
               </tr>

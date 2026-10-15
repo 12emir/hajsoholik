@@ -1,7 +1,13 @@
 import { ArrowUpRight, Clock, Heart } from 'lucide-react'
 
 import { BankAvatar } from '@/components/app/BankAvatar'
-import { type Promotion, ctaLabel, promoPath } from '@/data/promotions'
+import {
+  type Promotion,
+  affiliateAttrs,
+  ctaLabel,
+  deadlineChip,
+  promoPath,
+} from '@/data/promotions'
 
 interface Props {
   promo: Promotion
@@ -9,14 +15,22 @@ interface Props {
   onToggleSaved: () => void
   onOpen: () => void
   progress: boolean[]
+  /** „Teraz" dla liczenia terminu — SSR podaje datę builda, klient dolicza po zamontowaniu. */
+  now: Date
 }
 
 /** Karta wyróżniona (Hity Tygodnia / TOP 3) — standard Apple-tier z wyraźnym obramowaniem. */
-export function FeaturedCard({ promo, saved, onToggleSaved, onOpen, progress }: Props) {
+export function FeaturedCard({ promo, saved, onToggleSaved, onOpen, progress, now }: Props) {
   const done = progress.filter(Boolean).length
   const total = promo.requirements.length
 
-  const isEndingSoon = promo.deadlineDays > 0 && promo.deadlineDays <= 3
+  const chip = deadlineChip(promo.deadlineDate, now)
+  const chipClass =
+    chip.tone === 'expired'
+      ? 'bg-zinc-100 text-zinc-600'
+      : chip.tone === 'urgent'
+        ? 'bg-amber-50 text-amber-800 border border-amber-200/60'
+        : 'bg-zinc-100 text-zinc-600'
 
   return (
     <article className="group relative bg-white rounded-2xl border border-zinc-300 hover:border-zinc-400 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-200 flex flex-col justify-between overflow-hidden">
@@ -105,14 +119,10 @@ export function FeaturedCard({ promo, saved, onToggleSaved, onOpen, progress }: 
       <div className="relative z-20 pt-3 border-t border-zinc-100">
         <div className="flex items-center justify-between text-xs mb-3 pointer-events-none">
           <span
-            className={`px-2 py-0.5 rounded-md font-medium text-[11px] flex items-center gap-1 ${
-              isEndingSoon
-                ? 'bg-amber-50 text-amber-800 border border-amber-200/60'
-                : 'bg-zinc-100 text-zinc-600'
-            }`}
+            className={`px-2 py-0.5 rounded-md font-medium text-[11px] flex items-center gap-1 ${chipClass}`}
           >
             <Clock className="w-3 h-3" aria-hidden="true" />
-            {promo.deadlineLabel}
+            {chip.label}
           </span>
           <span className="text-zinc-500 text-[11px] font-medium flex items-center gap-1">
             Czas: {promo.time}
@@ -138,8 +148,7 @@ export function FeaturedCard({ promo, saved, onToggleSaved, onOpen, progress }: 
         {/* Apple Island CTA */}
         <a
           href={promo.url || promoPath(promo)}
-          target={promo.url ? '_blank' : undefined}
-          rel={promo.url ? 'noopener' : undefined}
+          {...(promo.url ? affiliateAttrs : {})}
           onClick={(e) => e.stopPropagation()}
           className="relative z-20 w-full h-10 rounded-xl bg-zinc-900 text-white text-xs font-semibold flex items-center justify-center gap-1.5 pointer-events-auto hover:bg-zinc-800 active:scale-[0.98] transition shadow-xs"
           aria-label={`${ctaLabel(promo)}: ${promo.title}`}

@@ -1,0 +1,53 @@
+---
+import { site } from '../data/site'
+
+// Consent Mode v2 + GA4. Do momentu wyrażenia zgody NIE ładujemy gtag.js ani nie
+// wysyłamy cookieless pingów — wszystkie sygnały startują jako „denied", a tag
+// wjeżdża dopiero po kliknięciu „Akceptuję analitykę" w bannerze cookies.
+const gaId = site.gaId
+const consentKey = 'hajsoholik_analytics_consent'
+
+const source = `
+;(() => {
+  var GA_ID = ${JSON.stringify(gaId)};
+  var KEY = ${JSON.stringify(consentKey)};
+  if (!GA_ID) return;
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { window.dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    functionality_storage: 'granted',
+    security_storage: 'granted',
+    wait_for_update: 500
+  });
+  var load = function () {
+    if (window.__hjGaLoaded) return;
+    window.__hjGaLoaded = true;
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', GA_ID, { cookie_expires: 60 * 60 * 24 * 365 });
+  };
+  window.__hjGrantAnalytics = function () {
+    gtag('consent', 'update', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'granted'
+    });
+    load();
+  };
+  try {
+    if (window.localStorage.getItem(KEY) === 'granted') window.__hjGrantAnalytics();
+  } catch (e) {}
+})();
+`
+---
+
+<script is:inline set:html={source} />

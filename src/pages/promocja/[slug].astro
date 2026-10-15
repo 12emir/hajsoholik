@@ -1,6 +1,18 @@
 ---
 import type { GetStaticPaths } from 'astro'
-import { PROMOTIONS, type Promotion, ctaLabel, promoPath, slugify } from '../../data/promotions'
+import {
+  PROMOTIONS,
+  type Promotion,
+  affiliateAttrs,
+  bankPromoUrl,
+  ctaLabel,
+  deadlineChip,
+  deadlineHuman,
+  promoPath,
+  slugify,
+  sourceAttrs,
+  statusOf,
+} from '../../data/promotions'
 import { site } from '../../data/site'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 
@@ -33,7 +45,18 @@ const bonusTitlePrefix =
     : bonusKind === 'monthly'
       ? `do ${promo.bonus} zł/mc cashbacku`
       : `${promo.bonus} zł premii`
-const pageTitle = `${bonusTitlePrefix} w ${promo.bank}: ${promo.title} (2026) | Hajsoholik`
+// Tytuł ≤ ~62 znaków: pełna forma z nazwą oferty, a gdy się nie mieści — krótsza z kategorią.
+// Zmierzone na danych: 37/37 unikalnych; poprzednia formuła dawała 78–108 znaków (ucinane w SERP).
+const titleBase = `${bonusTitlePrefix} w ${promo.bank}`
+const pageTitleFull = `${titleBase}: ${promo.title} (2026) | Hajsoholik`
+const pageTitleShort = `${titleBase} (2026) — ${promo.category} | Hajsoholik`
+// Twardy limit 62 znaków: pełna forma, potem skrócona z kategorią, na końcu bez roku.
+const pageTitle =
+  pageTitleFull.length <= 62
+    ? pageTitleFull
+    : pageTitleShort.length <= 62
+      ? pageTitleShort
+      : `${titleBase} — ${promo.category} | Hajsoholik`
 const canonicalPath = promoPath(promo)
 const updatedHuman = new Date(`${site.updatedAt}T00:00:00+02:00`).toLocaleDateString('pl-PL', {
   day: 'numeric',
@@ -48,6 +71,12 @@ const verifiedHuman = new Date(`${promo.verifiedAt}T00:00:00+02:00`).toLocaleDat
 const year = new Date(`${site.updatedAt}T00:00:00+02:00`).getFullYear()
 // Data builda — próg dla pól schema, które nie mogą kłamać o przyszłości.
 const buildDate = new Date().toISOString().slice(0, 10)
+// Stan oferty liczony z daty (bez snapshotu z importu danych) — HTML nie ogłasza
+// jako aktywnej promocji, której termin już minął.
+const now = new Date(`${site.buildDate}T12:00:00+02:00`)
+const status = statusOf(promo.deadlineDate, now)
+const chip = deadlineChip(promo.deadlineDate, now)
+const deadlineLabel = deadlineHuman(promo.deadlineDate)
 
 const bezBikLabel = promo.bezBIK ? 'bez BIK' : 'sprawdza BIK'
 const bezWplywuLabel = promo.bezWplywu
@@ -62,7 +91,10 @@ const bonusLabel =
     : bonusKind === 'monthly'
       ? 'Cashback miesięczny'
       : 'Premia'
-const bankUrl = promo.url
+/** Link partnerski (monetyzowany) — tylko do CTA, zawsze z `rel="sponsored"`. */
+const affiliateUrl = promo.url
+/** Oficjalna strona promocji banku (źródło warunków) — link nieafiliacyjny. */
+const sourceUrl = bankPromoUrl(promo.bank)
 // Redakcyjna ocena oferty (1–5). Wyliczana deterministycznie z danych promocji,
 // aby Google Search Console miało spójne pole review/aggregateRating dla Product.
 const editorialScoreRaw =
@@ -73,8 +105,13 @@ const editorialStars = {
   filled: '★'.repeat(Math.round(editorialScore)),
   empty: '☆'.repeat(5 - Math.round(editorialScore)),
 }
-// Meta description z kluczowymi faktami (kwota, koszt, BIK, deadline) — ~150–160 znaków.
-const metaDescription = `${bonusTitlePrefix} w ${promo.bank} (${categoryLabel}): ${promo.title}. Koszt ${promo.cost} zł, czas ${promo.time}, ${bezBikLabel}, ${promo.deadlineLabel}. Sprawdź warunki i haczyki przed wnioskiem.`
+// Meta description ≤ 158 znaków (dłuższe Google ucina): najpierw wariant z nazwą oferty,
+// a gdy się nie mieści — krótszy z terminem i BIK.
+const metaDescriptionFull = `${promo.title} — ${bonusTitlePrefix} w ${promo.bank}. Koszt ${promo.cost} zł, ${bezBikLabel}, termin ${deadlineLabel}.`
+const metaDescription =
+  metaDescriptionFull.length <= 158
+    ? metaDescriptionFull
+    : `${bonusTitlePrefix} w ${promo.bank}. Koszt ${promo.cost} zł, ${promo.time}, ${bezBikLabel}, termin ${deadlineLabel}.`
 
 const faq = [
   ...(promo.faqExtra
@@ -91,10 +128,15 @@ const faq = [
   },
   {
     q: `Czy ${bankLabel} sprawdza BIK w tej promocji?`,
-    a:
-      bezBikLabel === 'bez BIK'
-        ? `Nie — promocja „${promo.title}" w ${bankLabel} nie wymaga sprawdzenia w BIK i nie wpływa na zdolność kredytową. Możesz z niej skorzystać nawet przy negatywnej historii w biurze informacji kredytowej. To jedna z kluczowych zalet oferty dla osób, które chcą uniknąć wpisów i pytań do BIK podczas zakładania konta. Pamiętaj jednak, że każdy bank może weryfikować tożsamość przez inne rejestry.`
-        : `Tak — w promocji „${promo.title}" bank ${bankLabel} sprawdza historię w BIK oraz ocenia zdolność kredytową przed otwarciem konta. Sam wniosek nie zawsze trafia do BIK, ale sprawdzenie jest standardem przy tego typu ofertach. Jeśli zależy Ci na braku wpływu na profil kredytowy, poszukaj w naszym rankingu ofert oznaczonych „bez BIK".`,
+    a: `${
+      promo.bezBIK
+        ? `Nie — promocja „${promo.title}" w ${bankLabel} nie wymaga sprawdzenia w BIK. Możesz z niej skorzystać nawet przy negatywnej historii w biurze informacji kredytowej.`
+        : `Tak — w promocji „${promo.title}" bank ${bankLabel} sprawdza historię w BIK oraz ocenia zdolność kredytową przed otwarciem konta. Sam wniosek nie zawsze trafia do BIK, ale sprawdzenie jest standardem przy tego typu ofertach.`
+    } ${
+      promo.bezWplywu
+        ? 'Produkt nie wpływa też na zdolność kredytową.'
+        : 'Uwaga: sam produkt może wpływać na zdolność kredytową (np. limit w rachunku) — to istotne, jeśli planujesz kredyt hipoteczny.'
+    } Pamiętaj, że każdy bank może weryfikować tożsamość przez inne rejestry.`,
   },
   {
     q: `Jak szybko można zrealizować promocję ${promo.bank} i dostać premię?`,
@@ -158,9 +200,7 @@ const jsonLd = [
       price: promo.cost,
       priceCurrency: 'PLN',
       availability:
-        promo.status === 'Archiwalna'
-          ? 'https://schema.org/Discontinued'
-          : 'https://schema.org/InStock',
+        status === 'Archiwalna' ? 'https://schema.org/Discontinued' : 'https://schema.org/InStock',
       // deadlineDate bywa już w przeszłości (promocja wygasła, strona zostaje dla SEO).
       // Google oznacza wtedy ofertę jako wygasłą i wycina rich result, więc datę
       // sprzed dnia builda pomijamy zamiast publikować nieprawdę.
@@ -177,7 +217,7 @@ const jsonLd = [
       {
         '@type': 'PropertyValue',
         name: 'Termin',
-        value: `${promo.deadlineDate} (${promo.deadlineLabel})`,
+        value: `${promo.deadlineDate} (${deadlineLabel})`,
       },
       { '@type': 'PropertyValue', name: 'Data weryfikacji', value: promo.verifiedAt },
       ...(promo.audience
@@ -215,8 +255,7 @@ const jsonLd = [
   path={canonicalPath}
   jsonLd={jsonLd}
   ogType="product"
-  ogImage={`/og/${slugify(promo.title)}.svg`}
-  noindex={promo.status === 'Archiwalna'}
+  ogImage={`/og/${slugify(promo.title)}.jpg`}
   showFreshness
 >
   <div class="max-w-[900px] mx-auto px-4 md:px-6 py-8 md:py-12">
@@ -244,15 +283,31 @@ const jsonLd = [
         <div>
           <p class="text-sm font-bold text-zinc-900">{promo.bank} • {promo.category}</p>
           <div class="flex flex-wrap items-center gap-2 mt-1">
-            <span class="text-[11px] font-bold bg-zinc-100 px-2 py-0.5 rounded-full">{promo.status}</span>
             <span
+              data-deadline-status
+              data-deadline={promo.deadlineDate}
+              data-build-status={status}
+              class:list={[
+                'text-[11px] font-bold px-2 py-0.5 rounded-full',
+                status === 'Archiwalna' ? 'bg-zinc-200 text-zinc-700' : 'bg-zinc-100',
+              ]}
+            >{status}</span>
+            <span
+              data-deadline-chip
+              data-deadline={promo.deadlineDate}
+              data-build-chip={chip.label}
               class:list={[
                 'text-[11px] px-2 py-0.5 rounded-full font-bold',
-                promo.deadlineDays <= 2 ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700',
+                chip.tone === 'expired'
+                  ? 'bg-zinc-200 text-zinc-700'
+                  : chip.tone === 'urgent'
+                    ? 'bg-red-50 text-red-700'
+                    : 'bg-amber-50 text-amber-800',
               ]}
             >
-              {promo.deadlineLabel}
+              {chip.label}
             </span>
+            <span class="text-[11px] text-zinc-500">stan na {site.buildDate}</span>
           </div>
         </div>
       </div>
@@ -296,26 +351,26 @@ const jsonLd = [
         )}
       </div>
 
-      {bankUrl && (
+      {affiliateUrl && (
         <div class="flex flex-wrap items-center gap-3 mt-6">
           <a
-            href={bankUrl}
-            target="_blank"
-            rel="noopener"
+            href={affiliateUrl}
+            {...affiliateAttrs}
             class="inline-flex items-center gap-2 h-12 rounded-full bg-[#007B46] px-6 text-[15px] font-black text-white hover:bg-[#006b3e] transition"
           >
             {ctaLabel(promo)} w {promo.bank}
             <span aria-hidden="true">→</span>
           </a>
-          <a
-            href={bankUrl}
-            target="_blank"
-            rel="noopener"
-            class="inline-flex items-center gap-2 text-[13px] font-bold text-[#007B46] hover:underline"
-          >
-            Regulamin i warunki u {promo.bank}
-            <span aria-hidden="true">↗</span>
-          </a>
+          {sourceUrl && (
+            <a
+              href={sourceUrl}
+              {...sourceAttrs}
+              class="inline-flex items-center gap-2 text-[13px] font-bold text-[#007B46] hover:underline"
+            >
+              Oficjalna strona promocji {promo.bank}
+              <span aria-hidden="true">↗</span>
+            </a>
+          )}
         </div>
       )}
     </header>
@@ -385,12 +440,11 @@ const jsonLd = [
             </div>
           </dl>
           <p class="text-[11px] text-zinc-400 mt-2">ROI oferty: {promo.roi} zł / h pracy</p>
-          {bankUrl ? (
+          {affiliateUrl ? (
             <>
               <a
-                href={bankUrl}
-                target="_blank"
-                rel="noopener"
+                href={affiliateUrl}
+                {...affiliateAttrs}
                 class="w-full mt-5 h-12 rounded-full bg-[#007B46] text-white font-black text-sm hover:bg-[#006b3e] transition flex items-center justify-center gap-2"
               >
                 {ctaLabel(promo)} w {promo.bank} <span aria-hidden="true">→</span>
@@ -441,21 +495,20 @@ const jsonLd = [
             </div>
             <div class="flex justify-between gap-4">
               <dt class="text-zinc-500">Termin</dt>
-              <dd class="font-semibold text-right">{promo.deadlineLabel}</dd>
+              <dd class="font-semibold text-right">{deadlineLabel}</dd>
             </div>
             <div class="flex justify-between gap-4">
               <dt class="text-zinc-500">Weryfikacja</dt>
               <dd class="font-semibold text-right">{verifiedHuman}</dd>
             </div>
           </dl>
-          {bankUrl && (
+          {sourceUrl && (
             <a
-              href={bankUrl}
-              target="_blank"
-              rel="noopener"
+              href={sourceUrl}
+              {...sourceAttrs}
               class="inline-flex items-center gap-1.5 mt-4 text-[12px] font-bold text-[#007B46] hover:underline"
             >
-              Zobacz regulamin u {promo.bank} <span aria-hidden="true">↗</span>
+              Oficjalna strona promocji {promo.bank} <span aria-hidden="true">↗</span>
             </a>
           )}
         </section>
@@ -472,15 +525,14 @@ const jsonLd = [
           </p>
           <p class="text-[12px] text-zinc-600 leading-relaxed mt-2">
             Regulamin tej promocji sprawdzony przez redakcję Hajsoholik {verifiedHuman}.
-            {bankUrl ? (
+            {sourceUrl ? (
               <>
                 {' '}
                 Źródło warunków: oficjalna strona {promo.bank}
                 {' '}
                 <a
-                  href={bankUrl}
-                  target="_blank"
-                  rel="noopener"
+                  href={sourceUrl}
+                  {...sourceAttrs}
                   class="font-bold text-[#007B46] hover:underline"
                 >
                   (link do regulaminu ↗)
@@ -554,4 +606,39 @@ const jsonLd = [
       </p>
     </section>
   </div>
+
+  <!-- Termin liczymy też w przeglądarce: statyczny HTML nie może ogłaszać jako aktywnej
+       oferty, której data minęła między buildami. -->
+  <script is:inline>
+    ;(() => {
+      const dayMs = 86400000
+      const human = (date) =>
+        date.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' })
+      document.querySelectorAll('[data-deadline-status]').forEach((el) => {
+        const raw = el.getAttribute('data-deadline')
+        if (!raw) return
+        const end = new Date(`${raw}T23:59:59+02:00`)
+        if (Number.isNaN(end.getTime())) return
+        const days = Math.ceil((end.getTime() - Date.now()) / dayMs)
+        const status = days <= 0 ? 'Archiwalna' : days <= 2 ? 'Kończy się w 48h' : 'Aktywna'
+        const chip =
+          days <= 0
+            ? 'Oferta zakończona'
+            : days === 1
+              ? `Ostatni dzień — do ${human(end)}`
+              : days <= 3
+                ? `Kończy się — do ${human(end)}`
+                : `do ${human(end)}`
+        if (status !== el.getAttribute('data-build-status')) {
+          el.textContent = status
+          if (status === 'Archiwalna') el.className = el.className.replace('bg-zinc-100', 'bg-zinc-200')
+        }
+        const chipEl = document.querySelector('[data-deadline-chip]')
+        if (chipEl && chip !== chipEl.getAttribute('data-build-chip')) {
+          chipEl.textContent = chip
+          if (days <= 0) chipEl.className = 'text-[11px] px-2 py-0.5 rounded-full font-bold bg-zinc-200 text-zinc-700'
+        }
+      })
+    })()
+  </script>
 </BaseLayout>

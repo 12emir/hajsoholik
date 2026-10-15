@@ -1,50 +1,69 @@
 ---
-// Informacyjny banner cookies — serwis używa wyłącznie niezbędnych plików cookies
-// oraz localStorage (postęp promocji, filtry). Podstawa: art. 173 ust. 2 Prawa
-// telekomunikacyjnego (brak wymogu zgody), dlatego banner ma charakter informacyjny
-// i działa bez frameworka.
-// Banner renderuje się zawsze; skrypt inline ukrywa go od razu, jeśli użytkownik
-// już go zaakceptował (flaga w localStorage).
-const storageKey = 'hajsoholik_cookies_accepted'
+// Banner zgody (Consent Mode v2). Serwis używa niezbędnych plików cookies i
+// localStorage (postęp promocji, filtry) bez zgody — art. 173 ust. 2 Prawa
+// telekomunikacyjnego. Analityka (GA4) startuje WYŁĄCZNIE po zgodzie, dlatego
+// banner ma dwa równorzędne przyciski, a brak decyzji = brak analityki.
 ---
 
 <div
   id="cookie-banner"
   class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.06)]"
   role="region"
-  aria-label="Informacja o cookies"
+  aria-label="Zgoda na pliki cookies"
   data-cookie-banner
   hidden
 >
   <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 md:px-6">
-    <p class="text-[13px] leading-relaxed text-zinc-600">
-      Używamy niezbędnych plików cookies oraz pamięci lokalnej (localStorage), aby zapamiętać
-      Twój postęp w promocjach i ustawienia filtrów. Nie zbieramy danych marketingowych.
-      Więcej w
+    <p class="text-[13px] leading-relaxed text-zinc-600 max-w-3xl">
+      Używamy niezbędnych plików cookies i pamięci lokalnej, żeby zapamiętać Twój postęp w promocjach
+      i ustawienia filtrów. Za Twoją zgodą chcemy też mierzyć ruch w Google Analytics 4 (anonimowe
+      statystyki odwiedzin i kliknięć w oferty). Bez zgody analityka się nie uruchamia. Szczegóły w
       <a href="/polityka-prywatnosci" class="font-medium text-zinc-900 underline hover:text-black">
         Polityce prywatności
       </a>.
     </p>
-    <button
-      type="button"
-      data-cookie-accept
-      class="min-h-[40px] shrink-0 rounded-xl bg-zinc-900 px-5 text-xs font-semibold text-white transition-colors hover:bg-zinc-800 active:scale-[0.98] shadow-xs cursor-pointer"
-    >
-      OK, rozumiem
-    </button>
+    <div class="flex shrink-0 items-center gap-2">
+      <button
+        type="button"
+        data-cookie-reject
+        class="min-h-[40px] rounded-xl border border-zinc-300 bg-white px-4 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50 active:scale-[0.98] cursor-pointer"
+      >
+        Tylko niezbędne
+      </button>
+      <button
+        type="button"
+        data-cookie-accept
+        class="min-h-[40px] rounded-xl bg-zinc-900 px-5 text-xs font-semibold text-white transition-colors hover:bg-zinc-800 active:scale-[0.98] shadow-xs cursor-pointer"
+      >
+        Akceptuję analitykę
+      </button>
+    </div>
   </div>
 </div>
 
 <script is:inline>
   ;(() => {
     if (typeof window === 'undefined') return
-    const key = 'hajsoholik_cookies_accepted'
+    const key = 'hajsoholik_analytics_consent'
     const banner = document.getElementById('cookie-banner')
     if (!banner) return
-    if (window.localStorage.getItem(key)) return
+    let stored = null
+    try {
+      stored = window.localStorage.getItem(key)
+    } catch (e) {}
+    if (stored) return
     banner.hidden = false
     banner.querySelector('[data-cookie-accept]')?.addEventListener('click', () => {
-      window.localStorage.setItem(key, 'true')
+      try {
+        window.localStorage.setItem(key, 'granted')
+      } catch (e) {}
+      window.__hjGrantAnalytics?.()
+      banner.hidden = true
+    })
+    banner.querySelector('[data-cookie-reject]')?.addEventListener('click', () => {
+      try {
+        window.localStorage.setItem(key, 'denied')
+      } catch (e) {}
       banner.hidden = true
     })
   })()

@@ -1,6 +1,7 @@
 ---
 import '../styles/globals.css'
 import jakartaWoff2 from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url'
+import Analytics from '../components/Analytics.astro'
 import CookieBanner from '../components/CookieBanner.astro'
 import Footer from '../components/Footer.astro'
 import SiteHeader from '../components/SiteHeader.astro'
@@ -61,9 +62,11 @@ const structuredData = [
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: site.name,
+    legalName: site.publisher,
     url: site.url,
     description: site.description,
     inLanguage: 'pl-PL',
+    publishingPrinciples: `${site.url}/o-redakcji`,
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer support',
@@ -73,6 +76,11 @@ const structuredData = [
   }),
   ...jsonLd,
 ]
+
+// Rozmiar/typ OG obrazka tylko dla rastrów — SVG nie ma wymiarów, a Facebook
+// i tak go nie renderuje (SEO-205).
+const ogExt = ogImage.slice(ogImage.lastIndexOf('.') + 1).toLowerCase()
+const ogRaster = ogExt === 'jpg' || ogExt === 'jpeg' || ogExt === 'png'
 ---
 
 <!doctype html>
@@ -85,7 +93,7 @@ const structuredData = [
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#F8F9FC" />
     <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'} />
-    <meta name="author" content="Redakcja Hajsoholik" />
+    <meta name="author" content={`Redakcja Hajsoholik — ${site.publisher}`} />
     {showFreshness && (
       <>
         <meta name="datePublished" content={site.publishedAt} />
@@ -103,6 +111,10 @@ const structuredData = [
     <meta property="og:description" content={description ?? site.description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogUrl} />
+    {ogRaster && <meta property="og:image:type" content={ogExt === 'png' ? 'image/png' : 'image/jpeg'} />}
+    {ogRaster && <meta property="og:image:width" content="1200" />}
+    {ogRaster && <meta property="og:image:height" content="630" />}
+    {ogRaster && <meta property="og:image:alt" content={title} />}
     <meta property="og:locale" content="pl_PL" />
     {showFreshness && <meta property="og:updated_time" content={site.updatedAt} />}
 
@@ -110,6 +122,7 @@ const structuredData = [
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description ?? site.description} />
     <meta name="twitter:image" content={ogUrl} />
+    {ogRaster && <meta name="twitter:image:alt" content={title} />}
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -135,5 +148,6 @@ const structuredData = [
     {!bare && <TurbopromkiBanner />}
     {!bare && <Footer currentPath={path} />}
     {!bare && <CookieBanner />}
+    <Analytics />
   </body>
 </html>

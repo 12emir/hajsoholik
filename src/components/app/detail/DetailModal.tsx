@@ -3,7 +3,13 @@ import { useEffect, useRef } from 'react'
 import { ArrowUpRight, Check, Clock, TriangleAlert, Users, X } from 'lucide-react'
 
 import { BankAvatar } from '@/components/app/BankAvatar'
-import { type Promotion, ctaLabel, promoPath } from '@/data/promotions'
+import {
+  type Promotion,
+  affiliateAttrs,
+  ctaLabel,
+  deadlineChip,
+  promoPath,
+} from '@/data/promotions'
 
 interface Props {
   promo: Promotion
@@ -12,6 +18,8 @@ interface Props {
   progress: boolean[]
   setProgressItem: (index: number, value: boolean) => void
   onClose: () => void
+  /** „Teraz" dla liczenia terminu — SSR podaje datę builda, klient dolicza po zamontowaniu. */
+  now: Date
 }
 
 /** Modal szczegółów promocji — standard Apple-tier. */
@@ -22,6 +30,7 @@ export function DetailModal({
   progress,
   setProgressItem,
   onClose,
+  now,
 }: Props) {
   const titleId = `promo-title-${promo.id}`
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -29,7 +38,13 @@ export function DetailModal({
   const done = progress.filter(Boolean).length
   const total = promo.requirements.length
   const roi = Math.round((promo.bonus - costInput) / (promo.timeMinutes / 60))
-  const isEndingSoon = promo.deadlineDays > 0 && promo.deadlineDays <= 3
+  const chip = deadlineChip(promo.deadlineDate, now)
+  const chipClass =
+    chip.tone === 'expired'
+      ? 'bg-zinc-100 text-zinc-600'
+      : chip.tone === 'urgent'
+        ? 'bg-amber-50 text-amber-800 border border-amber-200/60'
+        : 'bg-zinc-100 text-zinc-600'
 
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null
@@ -91,14 +106,8 @@ export function DetailModal({
                   <span className="text-xs font-semibold text-zinc-700 bg-zinc-100 px-2.5 py-0.5 rounded-full border border-black/[0.04]">
                     {promo.bank} • {promo.category}
                   </span>
-                  <span
-                    className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
-                      isEndingSoon
-                        ? 'bg-amber-50 text-amber-800 border border-amber-200/60'
-                        : 'bg-zinc-100 text-zinc-600'
-                    }`}
-                  >
-                    {promo.deadlineLabel}
+                  <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${chipClass}`}>
+                    {chip.label}
                   </span>
                 </div>
                 <h2
@@ -239,8 +248,7 @@ export function DetailModal({
 
                 <a
                   href={promo.url || promoPath(promo)}
-                  target={promo.url ? '_blank' : undefined}
-                  rel={promo.url ? 'noopener' : undefined}
+                  {...(promo.url ? affiliateAttrs : {})}
                   className="w-full mt-4 h-10 rounded-xl bg-white text-zinc-900 font-semibold text-xs hover:bg-zinc-100 active:scale-[0.98] transition flex items-center justify-center gap-1.5 shadow-xs"
                 >
                   {ctaLabel(promo)} <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />

@@ -19,6 +19,28 @@ const bonusPrefix = (kind?: string) => {
   return 'premii'
 }
 
+/** Zawija tekst do `max` znaków w wierszu (maks. 2 wiersze) — bez tego długi tytuł
+ *  wychodzi za krawędź 1200 px i na karcie społecznościowej jest ucięty. */
+const wrap = (text: string, max: number, lines = 2): string[] => {
+  const out: string[] = []
+  let line = ''
+  for (const word of text.split(' ')) {
+    if (line && `${line} ${word}`.length > max) {
+      out.push(line)
+      line = word
+    } else {
+      line = line ? `${line} ${word}` : word
+    }
+  }
+  if (line) out.push(line)
+  if (out.length > lines) {
+    const kept = out.slice(0, lines)
+    kept[lines - 1] = `${kept[lines - 1].slice(0, max - 1).trimEnd()}…`
+    return kept
+  }
+  return out
+}
+
 export const GET: APIRoute<Props> = ({ props }) => {
   const { promo } = props
 
@@ -26,9 +48,9 @@ export const GET: APIRoute<Props> = ({ props }) => {
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
   const color = promo.color.replace('#', '')
-  const dark = '#0B1220'
-  const brand = '#00C26E'
-  const title = esc(promo.title)
+  const dark = '0B1220'
+  const brand = '00C26E'
+  const titleLines = wrap(promo.title, 30)
   const bonus = promo.bonus.toLocaleString('pl-PL')
   const kindLabel = bonusPrefix(promo.bonusKind)
   const sub = esc(`${promo.bank} • ${promo.category} • ${promo.time}`)
@@ -48,10 +70,15 @@ export const GET: APIRoute<Props> = ({ props }) => {
   <circle cx="1050" cy="80" r="220" fill="#${brand}" opacity="0.12"/>
   <circle cx="120" cy="560" r="180" fill="#ffffff" opacity="0.05"/>
   <text x="64" y="92" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="800" fill="#${brand}">Hajsoholik</text>
-  <text x="64" y="250" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700" fill="#ffffff">${title}</text>
-  <rect x="64" y="300" width="360" height="8" rx="4" fill="url(#acc)"/>
-  <text x="64" y="420" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="900" fill="#ffffff">${bonus} zł</text>
-  <text x="64" y="470" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#4ade80">${kindLabel}</text>
+  ${titleLines
+    .map(
+      (line, index) =>
+        `<text x="64" y="${232 + index * 58}" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700" fill="#ffffff">${esc(line)}</text>`,
+    )
+    .join('\n  ')}
+  <rect x="64" y="320" width="360" height="8" rx="4" fill="url(#acc)"/>
+  <text x="64" y="436" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="900" fill="#ffffff">${bonus} zł</text>
+  <text x="64" y="484" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#4ade80">${kindLabel}</text>
   <text x="64" y="548" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="600" fill="#e2e8f0">${sub}</text>
   <text x="64" y="596" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#94a3b8">${site.url}</text>
 </svg>`

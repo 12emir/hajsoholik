@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 
-import { PROMOTIONS, type Promotion, slugify } from '@/data/promotions'
+import { PROMOTIONS, type Promotion, slugify, statusOf } from '@/data/promotions'
 import { FeaturedCard } from './cards/FeaturedCard'
 import { PromotionCard } from './cards/PromotionCard'
 import { DetailModal } from './detail/DetailModal'
@@ -39,7 +39,15 @@ function toggleInList(list: string[], value: string): string[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
 }
 
-export default function HajsoholikApp() {
+export default function HajsoholikApp({ buildNow }: { buildNow: string }) {
+  // „Teraz" startuje z datą builda (identycznie jak SSR → brak hydration mismatch),
+  // a po zamontowaniu przeskakuje na prawdziwą datę użytkownika.
+  const [now, setNow] = useState(() => new Date(`${buildNow}T12:00:00+02:00`))
+
+  useEffect(() => {
+    setNow(new Date())
+  }, [])
+
   const [query, setQuery] = useState('')
   const [categories, setCategories] = useState<string[]>(() => {
     if (typeof window === 'undefined') return []
@@ -93,7 +101,7 @@ export default function HajsoholikApp() {
       if (p.bonus < minBonus) return false
       if (difficulties.length && !difficulties.includes(p.difficulty)) return false
       if (times.length && !times.includes(p.time)) return false
-      if (statuses.length && !statuses.includes(p.status)) return false
+      if (statuses.length && !statuses.includes(statusOf(p.deadlineDate, now))) return false
       if (onlyNoBIK && !p.bezBIK) return false
       if (noCreditImpact && !p.bezWplywu) return false
       return true
@@ -108,7 +116,7 @@ export default function HajsoholikApp() {
         case 'Najłatwiejsza':
           return (DIFF_ORDER[a.difficulty] ?? 0) - (DIFF_ORDER[b.difficulty] ?? 0)
         case 'Kończy się najszybciej':
-          return a.deadlineDays - b.deadlineDays
+          return a.deadlineDate.localeCompare(b.deadlineDate)
         case 'Popularność':
           return b.popularity - a.popularity
         default:
@@ -126,6 +134,7 @@ export default function HajsoholikApp() {
     onlyNoBIK,
     noCreditImpact,
     sort,
+    now,
   ])
 
   // TOP 3 tylko gdy nie ma wąskich filtrów
@@ -209,7 +218,7 @@ export default function HajsoholikApp() {
             <div>
               <h2 className="font-semibold text-lg md:text-xl tracking-tight text-zinc-900">
                 Promocje bankowe{' '}
-                <span className="text-zinc-400 font-normal text-sm ml-1">({filtered.length})</span>
+                <span className="text-zinc-600 font-normal text-sm ml-1">({filtered.length})</span>
               </h2>
               <p className="text-xs text-zinc-500 mt-0.5">
                 Niezależne porównanie premii za konta, karty i lokaty
@@ -230,6 +239,7 @@ export default function HajsoholikApp() {
               <div className="relative">
                 <select
                   id="sort-select"
+                  aria-label="Sortuj oferty"
                   value={sort}
                   onChange={(e) => setSort(e.target.value as SortOption)}
                   className="appearance-none bg-white border border-black/[0.08] rounded-xl pl-3.5 pr-8 py-1.5 text-xs font-medium text-zinc-800 shadow-xs outline-none hover:border-black/[0.15] transition cursor-pointer"
@@ -271,6 +281,7 @@ export default function HajsoholikApp() {
                       setCostInput(promo.cost)
                     }}
                     progress={progress[promo.id] ?? []}
+                    now={now}
                   />
                 ))}
               </div>
@@ -290,6 +301,7 @@ export default function HajsoholikApp() {
                   setCostInput(promo.cost)
                 }}
                 progress={progress[promo.id] ?? []}
+                now={now}
               />
             ))}
           </div>
@@ -298,7 +310,7 @@ export default function HajsoholikApp() {
             <div className="bg-white rounded-2xl border border-dashed border-zinc-200 p-12 text-center mt-6">
               <p className="font-semibold text-zinc-900">Brak wyników dla wybranych filtrów</p>
               <p className="text-xs text-zinc-500 mt-1">
-                Zresetuj filtry, aby wyświetlić wszystkie 36 ofert.
+                Zresetuj filtry, aby wyświetlić wszystkie {PROMOTIONS.length} ofert.
               </p>
               <button
                 type="button"
@@ -315,6 +327,7 @@ export default function HajsoholikApp() {
       {selected && (
         <DetailModal
           promo={selected}
+          now={now}
           costInput={costInput}
           setCostInput={setCostInput}
           progress={progress[selected.id] ?? []}

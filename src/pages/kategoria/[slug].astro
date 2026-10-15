@@ -5,9 +5,12 @@ import {
   CATEGORIES,
   type Category,
   PROMOTIONS,
+  affiliateAttrs,
   ctaLabel,
+  deadlineHuman,
   promoPath,
   slugify,
+  statusOf,
 } from '../../data/promotions'
 import { site } from '../../data/site'
 import BaseLayout from '../../layouts/BaseLayout.astro'
@@ -161,13 +164,34 @@ export const getStaticPaths = (() => {
 
 const { category } = Astro.props
 const slug = slugify(category)
+// Ten sam „teraz" co na pozostałych stronach — status z daty, nie z importu danych.
+const now = new Date(`${site.buildDate}T12:00:00+02:00`)
 const intro = CATEGORY_INTRO[category] ?? ''
-const promos = PROMOTIONS.filter((p) => p.category === category && p.status !== 'Archiwalna')
+const promos = PROMOTIONS.filter(
+  (p) => p.category === category && statusOf(p.deadlineDate, now) !== 'Archiwalna',
+)
 const sorted = [...promos].sort((a, b) => b.bonus - a.bonus)
 const faq = faqMap(category)
 
-const pageTitle = `Promocje na ${category.toLowerCase()} 2026 — premie i warunki | Hajsoholik`
-const metaDescription = `${intro} Porównaj ${promos.length} aktualnych ofert ${category.toLowerCase()}: premie do ${Math.max(...promos.map((p) => p.bonus))} zł, ROI, czas realizacji i BIK.`
+/** Ucina tekst do `max` znaków na granicy słowa (meta description ≤158). */
+const clamp = (text: string, max: number) => {
+  if (text.length <= max) return text
+  const cut = text.slice(0, max - 1)
+  return `${cut.slice(0, cut.lastIndexOf(' ')).trimEnd()}…`
+}
+
+// 62 znaki to granica czytelności w SERP — pełna forma, potem skrócona.
+const pageTitleFull = `Promocje na ${category.toLowerCase()} 2026 — premie i warunki | Hajsoholik`
+const pageTitle =
+  pageTitleFull.length <= 62
+    ? pageTitleFull
+    : `Promocje: ${category.toLowerCase()} 2026 | Hajsoholik`
+// Opis: pierwsze zdanie intro + liczby z bazy, twardo ucięte na 158 znakach.
+const introShort = (intro.split(/(?<=\.)\s/)[0] ?? intro).trim()
+const metaDescription = clamp(
+  `${introShort} ${promos.length} aktualnych ofert, premie do ${Math.max(...promos.map((p) => p.bonus))} zł, ROI i czas realizacji.`,
+  158,
+)
 const canonicalPath = `/kategoria/${slug}`
 
 const jsonLd = [
@@ -315,7 +339,7 @@ const jsonLd = [
                     </span>
                   </div>
                   <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600">
-                    {promo.deadlineLabel}
+                    do {deadlineHuman(promo.deadlineDate)}
                   </span>
                 </div>
 
@@ -338,8 +362,7 @@ const jsonLd = [
               <div class="pt-3 border-t border-zinc-100 flex items-center gap-2">
                 <a
                   href={promo.url || promoPath(promo)}
-                  target={promo.url ? '_blank' : undefined}
-                  rel={promo.url ? 'noopener' : undefined}
+                  {...(promo.url ? affiliateAttrs : {})}
                   class="flex-1 h-9 rounded-xl bg-zinc-900 text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-zinc-800 active:scale-[0.98] transition shadow-xs"
                 >
                   {ctaLabel(promo)} ↗

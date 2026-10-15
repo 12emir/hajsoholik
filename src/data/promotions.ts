@@ -63,10 +63,13 @@ export interface Promotion {
   bonus: number
   /** Rodzaj wartości oferty (premia/odsetki/cashback). */
   bonusKind?: BonusKind
-  /** Data końca promocji (YYYY-MM-DD) — wyliczany stąd deadline. */
+  /**
+   * Data końca promocji (YYYY-MM-DD) — JEDYNE źródło prawdy o terminie.
+   * Status i etykietę liczymy z niej w miejscu renderowania (`statusOf`, `deadlineChip`),
+   * nigdy nie zapisujemy ich do danych: mutacja przy imporcie wstawiała do HTML stan
+   * z dnia builda (SEO-201) i powodowała hydration mismatch React #418 (SEO-203).
+   */
   deadlineDate: string
-  deadlineDays: number
-  deadlineLabel: string
   /** Data ostatniej weryfikacji regulaminu przez redakcję (YYYY-MM-DD). */
   verifiedAt: string
   difficulty: Difficulty
@@ -75,7 +78,6 @@ export interface Promotion {
   tags: string[]
   requirements: string[]
   cost: number
-  status: Status
   popularity: number
   description: string
   haczyki: string[]
@@ -98,16 +100,58 @@ export interface Promotion {
   faqExtra?: { q: string; a: string }
 }
 
-/** Zwraca liczbę dni do końca promocji (0 gdy minęła) i czytelny label z daty. */
-export function deadlineFrom(dateISO: string): { days: number; label: string } {
+/** Data końca oferty jako koniec dnia (czas polski) lub `null`, gdy brak/niepoprawna. */
+export function deadlineEnd(dateISO: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO)) return null
   const end = new Date(`${dateISO}T23:59:59+02:00`)
-  const now = new Date()
-  const days = Math.ceil((end.getTime() - now.getTime()) / 86_400_000)
-  if (days <= 0) return { days: 0, label: 'Oferta zakończona' }
-  if (days === 1) return { days: 1, label: 'Ostatni dzień' }
-  if (days < 5) return { days, label: `Zostały ${days} dni` }
-  return { days, label: `Zostało ${days} dni` }
+  return Number.isNaN(end.getTime()) ? null : end
 }
+
+/** Dni do końca oferty (`null` = brak terminu, wartości ujemne = po terminie). */
+export function daysUntil(dateISO: string, now: Date): number | null {
+  const end = deadlineEnd(dateISO)
+  return end ? Math.ceil((end.getTime() - now.getTime()) / 86_400_000) : null
+}
+
+/**
+ * Status oferty wyliczany z daty i przekazanego „teraz" — bez mutowania danych.
+ * Ten sam kontrakt po stronie serwera i klienta: jedno źródło prawdy, zero rozjazdów.
+ */
+export function statusOf(dateISO: string, now: Date): Status {
+  const days = daysUntil(dateISO, now)
+  if (days === null || days > 2) return 'Aktywna'
+  return days <= 0 ? 'Archiwalna' : 'Kończy się w 48h'
+}
+
+/** Data końca po polsku — identyczna na serwerze i w kliencie (brak zależności od „teraz"). */
+export function deadlineHuman(dateISO: string): string {
+  const end = deadlineEnd(dateISO)
+  if (!end) return ''
+  return end.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+/**
+ * Etykieta terminu do UI: KONKRETNA DATA, nigdy licznik dni.
+ * Licznik („zostały 3 dni") zamrażał się w HTML-u na dniu builda i kłamał na produkcji.
+ */
+export function deadlineChip(
+  dateISO: string,
+  now: Date,
+): { label: string; tone: 'normal' | 'urgent' | 'expired' } {
+  const days = daysUntil(dateISO, now)
+  const human = deadlineHuman(dateISO)
+  if (days === null) return { label: '', tone: 'normal' }
+  if (days <= 0) return { label: 'Oferta zakończona', tone: 'expired' }
+  if (days === 1) return { label: `Ostatni dzień — do ${human}`, tone: 'urgent' }
+  if (days <= 3) return { label: `Kończy się — do ${human}`, tone: 'urgent' }
+  return { label: `do ${human}`, tone: 'normal' }
+}
+
+/** Link afiliacyjny/partnerski: nowa karta + `rel="sponsored noopener"` (wymóg Google). */
+export const affiliateAttrs = { target: '_blank', rel: 'sponsored noopener' } as const
+
+/** Link do źródła (oficjalna strona banku/regulamin): nowa karta, bez `sponsored`. */
+export const sourceAttrs = { target: '_blank', rel: 'noopener' } as const
 
 /** Oficjalne strony promocji banków — źródło regulaminu i warunków oferty. */
 const BANK_PROMO_URLS: Record<string, string> = {
@@ -195,8 +239,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta osobiste',
     title: '300 zł za konto w ING + 7% na oszczędnościowym',
     bonus: 300,
-    deadlineDays: 5,
-    deadlineLabel: 'zostało 5 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -210,7 +252,6 @@ export const PROMOTIONS: Promotion[] = [
       'Zaloguj się do aplikacji',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 98,
     description:
       'Najpopularniejsza promocja miesiąca: 300 zł za założenie konta w ING + 7% na koncie oszczędnościowym. Konto i karta za 0 zł przy 3 płatnościach kartą i wpływie 1000 zł. Premia wypłacana w 2 transzach, bez wpływu na BIK.',
@@ -229,8 +270,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta osobiste',
     title: '500 zł za eKonto + 200 zł za polecenie',
     bonus: 500,
-    deadlineDays: 2,
-    deadlineLabel: 'zostały 2 dni',
     deadlineDate: '2026-10-14',
     verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
@@ -244,7 +283,6 @@ export const PROMOTIONS: Promotion[] = [
       'Załóż mOkazje',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 95,
     description:
       '500 zł za eKonto w mBanku za proste warunki: transakcje BLIK i wpływ 1500 zł. Dodatkowo 200 zł za każde polecenie konta w programie PolecamBank. Bez sprawdzania BIK.',
@@ -269,8 +307,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Karty kredytowe',
     title: '400 zł za kartę kredytową + 0% prowizji',
     bonus: 400,
-    deadlineDays: 12,
-    deadlineLabel: 'zostało 12 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
@@ -284,7 +320,6 @@ export const PROMOTIONS: Promotion[] = [
       'Aktywuj raty 0%',
     ],
     cost: 25,
-    status: 'Aktywna',
     popularity: 88,
     description:
       '400 zł za kartę kredytową Santander bez prowizji przez rok — wydaj 1000 zł w 60 dni, spłać w całości i aktywuj raty 0%. 3% cashbacku i roczna opłata 0 zł przy minimalnym dochodzie 2500 zł.',
@@ -303,8 +338,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta osobiste',
     title: '200 zł za Konto dla Młodych + Spotify 3mc',
     bonus: 200,
-    deadlineDays: 20,
-    deadlineLabel: 'zostało 20 dni',
     deadlineDate: '2026-11-30',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -313,7 +346,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['dla <26 lat', '+ Spotify'],
     requirements: ['Załóż konto do 15.09', '1 płatność kartą', 'Zaloguj do IKO'],
     cost: 0,
-    status: 'Aktywna',
     popularity: 82,
     description:
       '200 zł za Konto dla Młodych w PKO (do 26 lat) — wystarczy 1 płatność kartą i logowanie do IKO. Do tego 3 miesiące Spotify Premium gratis. Zero warunków dochodowych i zero sprawdzania BIK.',
@@ -332,8 +364,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta firmowe',
     title: '600 zł za Konto Firmowe + terminal za 0zł',
     bonus: 600,
-    deadlineDays: 8,
-    deadlineLabel: 'zostało 8 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Trudna',
@@ -347,7 +377,6 @@ export const PROMOTIONS: Promotion[] = [
       'Utrzymaj konto 6mc',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 76,
     description:
       '600 zł premii za Konto Firmowe w Alior dla jednoosobowych działalności + terminal płatniczy za 0 zł. Wymaga wpływu 2000 zł, 3 przelewów ZUS/US i utrzymania konta przez 6 miesięcy.',
@@ -366,8 +395,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta osobiste',
     title: '350 zł za Konto Otwarte na Ciebie',
     bonus: 350,
-    deadlineDays: 1,
-    deadlineLabel: 'ostatni dzień!',
     deadlineDate: '2026-11-15',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -376,7 +403,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['GO 8% 3mc', 'bezpłatne'],
     requirements: ['Załóż do 27.08', '3 płatności BLIK', 'Wpływ 1000zł'],
     cost: 0,
-    status: 'Aktywna',
     popularity: 91,
     description:
       '350 zł za Konto Otwarte na Ciebie w BNP Paribas — załóż konto, zrób 3 płatności BLIK i zapewnij wpływ 1000 zł. Do tego 8% na koncie oszczędnościowym przez 3 miesiące. Bez BIK, bez wpływu na zdolność kredytową.',
@@ -395,8 +421,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Cashback',
     title: '50 zł cashback + karta metal za pół ceny',
     bonus: 50,
-    deadlineDays: 30,
-    deadlineLabel: 'zostało 30 dni',
     deadlineDate: '2026-12-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -405,7 +429,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['+ 3% cashback', 'instant'],
     requirements: ['Załóż Revolut', 'Zrób płatność 50zł'],
     cost: 0,
-    status: 'Aktywna',
     popularity: 85,
     description:
       '50 zł cashbacku w Revolut za płatność 50 zł po założeniu konta + karta metal za pół ceny i do 3% zwrotu za zakupy. Realizacja w 10 minut, bez formalności i bez sprawdzania BIK.',
@@ -424,8 +447,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Oszczędnościowe',
     title: '250 zł za konto + 7,5% na 90 dni',
     bonus: 250,
-    deadlineDays: 7,
-    deadlineLabel: 'zostało 7 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -434,7 +455,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['7,5% oszcz.', 'lokata 5%'],
     requirements: ['Załóż Konto 360°', 'Aktywuj oszczędnościowe', 'Wpłać 1000zł'],
     cost: 0,
-    status: 'Aktywna',
     popularity: 79,
     description:
       '250 zł premii za Konto 360° w Millennium + 7,5% w skali roku na koncie oszczędnościowym przez 90 dni i lokata 5%. Załóż konto, wpłać 1000 zł i aktywuj oszczędnościowe. Bez BIK.',
@@ -453,8 +473,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Karty kredytowe',
     title: '300 zł za kartę kredytową ING',
     bonus: 300,
-    deadlineDays: 14,
-    deadlineLabel: 'zostało 14 dni',
     deadlineDate: '2026-11-30',
     verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
@@ -463,7 +481,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['+ 300zł za przelewy', 'bez BIK? nie'],
     requirements: ['Wniosek online', 'Dochód min 2000zł', 'Wydaj 500zł'],
     cost: 0,
-    status: 'Aktywna',
     popularity: 71,
     description:
       '300 zł za kartę kredytową ING — wniosek online, wydaj 500 zł i odbierz premię. Karta darmowa przez pierwszy rok, potem opłata 40 zł. Bank sprawdza BIK i wymaga dochodu min. 2000 zł.',
@@ -482,8 +499,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Ankiety/Aplikacje',
     title: '150 zł za aplikację mOkazje - zakupy',
     bonus: 150,
-    deadlineDays: 25,
-    deadlineLabel: 'zostało 25 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -492,7 +507,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['cashback', 'aplikacja'],
     requirements: ['Zainstaluj aplikację', 'Zrób zakupy za 100zł'],
     cost: 0,
-    status: 'Aktywna',
     popularity: 90,
     description:
       '150 zł za korzystanie z aplikacji mOkazje w mBanku — zainstaluj apkę i zrób zakupy za 100 zł u partnerów, żeby odebrać cashback. Realizacja w 15 minut, bez BIK i bez wpływu na zdolność kredytową.',
@@ -511,8 +525,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Polecenia',
     title: '100 zł za polecenie konta + 100 zł dla znajomego',
     bonus: 100,
-    deadlineDays: 18,
-    deadlineLabel: 'zostało 18 dni',
     deadlineDate: '2026-11-15',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -521,7 +533,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['polecenie', 'win-win'],
     requirements: ['Poleć konto', 'Znajomy założy i zrobi 1 płatność'],
     cost: 0,
-    status: 'Aktywna',
     popularity: 87,
     description:
       '100 zł za każde polecenie konta w Santander + 100 zł dla znajomego, który założy konto i zrobi 1 płatność. Maksymalnie 10 poleceń miesięcznie. Bez BIK.',
@@ -540,8 +551,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta firmowe',
     title: '400 zł za konto firmowe PKO + księgowość 3mc free',
     bonus: 400,
-    deadlineDays: 3,
-    deadlineLabel: 'zostały 3 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Trudna',
@@ -550,7 +559,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['JDG', 'księgowość'],
     requirements: ['Załóż konto firmowe', 'Wpływ 3000zł', 'Aktywuj terminal'],
     cost: 0,
-    status: 'Aktywna',
     popularity: 68,
     description:
       '400 zł za konto firmowe PKO dla jednoosobowych działalności + 3 miesiące księgowości gratis. Wymaga wpływu 3000 zł i aktywacji terminala. Po 3 miesiącach konto kosztuje 30 zł/mies.',
@@ -569,8 +577,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Oszczędnościowe',
     title: '300 zł za konto oszczędnościowe 7% + premia',
     bonus: 300,
-    deadlineDays: 9,
-    deadlineLabel: 'zostało 9 dni',
     deadlineDate: '2026-12-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -579,7 +585,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['7% 4mc', 'elastyczne'],
     requirements: ['Załóż konto', 'Wpłać min 2000zł', 'Utrzymaj 3mc'],
     cost: 0,
-    status: 'Aktywna',
     popularity: 77,
     description:
       '300 zł premii za konto oszczędnościowe w Alior z oprocentowaniem 7% przez 4 miesiące — wpłać min. 2000 zł i utrzymaj środki przez 3 miesiące. Limit wpłat do 100 000 zł. Bez BIK.',
@@ -598,8 +603,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta osobiste',
     title: '200 zł za konto + 50zł za kartę',
     bonus: 250,
-    deadlineDays: 6,
-    deadlineLabel: 'zostało 6 dni',
     deadlineDate: '2026-11-30',
     verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
@@ -608,7 +611,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['+ 50zł karta', 'GO 7%'],
     requirements: ['Załóż konto', 'Zamów kartę', 'Płatność kartą'],
     cost: 0,
-    status: 'Aktywna',
     popularity: 73,
     description:
       '200 zł za konto w BNP + 50 zł za zamówienie karty — załóż konto, zamów kartę i zrób jedną płatność. Do tego 7% na koncie oszczędnościowym. Bez BIK.',
@@ -627,8 +629,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Ankiety/Aplikacje',
     title: '120 zł za ankiety i testy Revolut <18',
     bonus: 120,
-    deadlineDays: 40,
-    deadlineLabel: 'zostało 40 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -637,7 +637,6 @@ export const PROMOTIONS: Promotion[] = [
     tags: ['dla młodych', 'ankiety'],
     requirements: ['Załóż Revolut Junior', 'Wypełnij 3 ankiety', 'Zaproś znajomego'],
     cost: 0,
-    status: 'Archiwalna',
     popularity: 64,
     description:
       '120 zł za wypełnienie ankiet i testów w Revolut Junior — załóż konto, wypełnij 3 ankiety i zaproś znajomego. Promocja dla osób poniżej 18 lat, obecnie archiwalna (koniec programu).',
@@ -656,8 +655,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta osobiste',
     title: 'eKonto z zyskiem do 1010 zł',
     bonus: 1010,
-    deadlineDays: 30,
-    deadlineLabel: 'zostało 30 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
@@ -671,7 +668,6 @@ export const PROMOTIONS: Promotion[] = [
       'Utrzymaj warunki przez 5 kolejnych miesięcy',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 96,
     description:
       'Najwyższa premia mBanku w tym sezonie — do 1010 zł za otwarcie eKonta i aktywność. 5,3% w skali roku na rachunku Moje cele oraz do 150 zł za każde polecenie w programie PolecamBank.',
@@ -699,8 +695,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta osobiste',
     title: 'eKonto dla młodych (18-24) do 910 zł',
     bonus: 910,
-    deadlineDays: 30,
-    deadlineLabel: 'zostało 30 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -714,7 +708,6 @@ export const PROMOTIONS: Promotion[] = [
       'Utrzymaj warunki przez 5 miesięcy',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 89,
     description:
       'Wersja eKonta dla osób 18–24. Niższe progi — wpływ 1000 zł zamiast 2000 zł — przy premii do 910 zł. 5,3% w skali roku na Moich celach.',
@@ -739,8 +732,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta firmowe',
     title: 'Firmootwieracz + Konto mBiznes do 500 zł',
     bonus: 500,
-    deadlineDays: 21,
-    deadlineLabel: 'został 21 dni',
     deadlineDate: '2026-11-15',
     verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
@@ -753,7 +744,6 @@ export const PROMOTIONS: Promotion[] = [
       'Wykonaj transakcje bezgotówkowe min. 1000 zł w 30 dni',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 74,
     description:
       'Premia do 500 zł dla nowych firm w mBanku. Konto mBiznes za 0 zł bezterminowo, 20 darmowych przelewów miesięcznie i 0 zł za mOrganizer przez 2 lata.',
@@ -775,8 +765,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta osobiste',
     title: 'Nest Konto — premia do 1250 zł',
     bonus: 1250,
-    deadlineDays: 30,
-    deadlineLabel: 'zostało 30 dni',
     deadlineDate: '2026-11-15',
     verifiedAt: '2026-10-11',
     difficulty: 'Średnia',
@@ -790,7 +778,6 @@ export const PROMOTIONS: Promotion[] = [
       'Utrzymuj zgody marketingowe',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 92,
     description:
       'Do 1250 zł premii za aktywność: zwroty za płatności do 1200 zł przez 24 miesiące + 50 zł za wymianę waluty w Nest Kantor. Lokata 6,1% dla nowych klientów.',
@@ -813,8 +800,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta firmowe',
     title: 'BIZnest Konto — premia do 3000 zł',
     bonus: 3000,
-    deadlineDays: 30,
-    deadlineLabel: 'zostało 30 dni',
     deadlineDate: '2026-11-30',
     verifiedAt: '2026-10-11',
     difficulty: 'Trudna',
@@ -828,7 +813,6 @@ export const PROMOTIONS: Promotion[] = [
       'Wyraź zgodę marketingową',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 70,
     description:
       'Premia do 3000 zł dla firm: od 50 do 1000 zł za przewalutowania i od 50 do 2000 zł za utrzymanie salda. Konto i pierwsza karta za 0 zł.',
@@ -848,8 +832,6 @@ export const PROMOTIONS: Promotion[] = [
     title: 'Konto Za Zero — 3% cashback na Allegro do 100 zł/mc',
     bonus: 100,
     bonusKind: 'monthly',
-    deadlineDays: 60,
-    deadlineLabel: 'zostało 60 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -862,7 +844,6 @@ export const PROMOTIONS: Promotion[] = [
       'Zapewnij wpływ min. 2000 zł miesięcznie dla cashbacku 2–3%',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 85,
     description:
       'Do 3% zwrotu za zakupy na Allegro (do 100 zł miesięcznie, do 1200 zł rocznie) + 6 miesięcy Allegro Smart! za 1 zł. Konto za 0 zł.',
@@ -884,8 +865,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Polecenia',
     title: 'VeloKonto — 100 zł za polecenie + do 50 zł/mc cashbacku',
     bonus: 100,
-    deadlineDays: 45,
-    deadlineLabel: 'zostało 45 dni',
     deadlineDate: '2026-11-30',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -898,7 +877,6 @@ export const PROMOTIONS: Promotion[] = [
       'Korzystaj z programu VeloKorzyści dla cashbacku',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 78,
     description:
       '100 zł za każde polecenie VeloKonta + do 50 zł miesięcznego cashbacku w programie VeloKorzyści (Max VeloKorzyści na Start). Konto za 0 zł bez warunków.',
@@ -921,8 +899,6 @@ export const PROMOTIONS: Promotion[] = [
     title: 'Elastyczne Konto Oszczędnościowe — 6% na nowe środki',
     bonus: 750,
     bonusKind: 'interest',
-    deadlineDays: 30,
-    deadlineLabel: 'zostało 30 dni',
     deadlineDate: '2026-12-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -935,7 +911,6 @@ export const PROMOTIONS: Promotion[] = [
       'Wpłać nowe środki (do 50 000 zł na 6%)',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 66,
     description:
       '6% w skali roku dla nowych środków do 50 000 zł (4% dla nadwyżki do 400 000 zł) przez 3 miesiące. Wymaga min. 5 transakcji bezgotówkowych w miesiącu. Wartość 750 zł to szacunkowy zysk z odsetek (6% × 50 000 zł przez 3 miesiące), a nie gotówkowa premia.',
@@ -959,8 +934,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta osobiste',
     title: 'Konto Przekorzystne — 300 zł, nawet 2400 zł w promocji podróżnej',
     bonus: 300,
-    deadlineDays: 17,
-    deadlineLabel: 'zostało 17 dni',
     deadlineDate: '2026-10-31',
     verifiedAt: '2026-10-11',
     difficulty: 'Łatwa',
@@ -974,7 +947,6 @@ export const PROMOTIONS: Promotion[] = [
       'Opcjonalnie: płacenie złotą kartą dla zwrotów w promocji podróżnej',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 88,
     description:
       '300 zł za otwarcie i aktywność, a w Promocji Podróżnej nawet 2400 zł: 3% zwrotu za pierwsze 20 transakcji, 6% od 21. transakcji i 20% za wydatki podróżne. 5,7% na koncie oszczędnościowym.',
@@ -993,8 +965,6 @@ export const PROMOTIONS: Promotion[] = [
     category: 'Konta firmowe',
     title: 'Konto Biznes z Żubrem — premia do 4200 zł',
     bonus: 4200,
-    deadlineDays: 30,
-    deadlineLabel: 'zostało 30 dni',
     deadlineDate: '2026-11-30',
     verifiedAt: '2026-10-11',
     difficulty: 'Trudna',
@@ -1008,7 +978,6 @@ export const PROMOTIONS: Promotion[] = [
       'Opcjonalnie: terminal płatniczy i kredyt w rachunku',
     ],
     cost: 0,
-    status: 'Aktywna',
     popularity: 81,
     description:
       'Do 4200 zł premii dla firm: 200 zł za założenie, do 2000 zł zwrotu za transakcje kartą (4% przez 10 miesięcy), 800 zł za terminal i 600 zł za kredyt w rachunku.',
@@ -1028,23 +997,29 @@ export const PROMOTIONS: Promotion[] = [
 // Oferty krypto (odzyskane z produkcji) — dokładane do listy bankowej.
 PROMOTIONS.push(...CRYPTO_PROMOTIONS)
 
-// Uczciwa świeżość: deadline przeliczany z daty przy każdym buildzie, nie statyczny snapshot.
+// Linki partnerskie: bezpośredni override w obiekcie → Leadstar (banki) → krypto.
+// To jedyna mutacja danych przy imporcie — nie zależy od czasu, więc SSR i klient
+// widzą dokładnie te same dane.
 for (const promo of PROMOTIONS) {
-  const { days, label } = deadlineFrom(promo.deadlineDate)
-  promo.deadlineDays = days
-  promo.deadlineLabel = label
-  if (days <= 0) {
-    promo.status = 'Archiwalna'
-  } else if (days <= 2) {
-    promo.status = 'Kończy się w 48h'
-  } else {
-    promo.status = 'Aktywna'
-  }
-  // Link partnerski:
-  // 1. Bezpośredni override w obiekcie (`url`)
-  // 2. Leadstar affiliate URL z tracking ID (programy bankowe)
-  // 3. Krypto affiliate URL z tracking ID
   promo.url = promo.url || PROMO_AFFILIATE_URLS[promo.id] || CRYPTO_AFFILIATE_URLS[promo.id] || ''
+}
+
+/**
+ * Bramka buildowa (SEO-201): oferta po terminie nie może pojechać na produkcję jako „Aktywna".
+ * Status liczymy z `deadlineDate` w miejscu renderowania, więc wygasłe oferty same spadają
+ * do „Archiwalna" — build to raportuje, ale go nie blokuje (deploy nie staje).
+ */
+export function reportExpiredOffers(buildDate: string): number {
+  const now = new Date(`${buildDate}T12:00:00+02:00`)
+  const expired = PROMOTIONS.filter((promo) => statusOf(promo.deadlineDate, now) === 'Archiwalna')
+  if (expired.length > 0) {
+    console.warn(
+      `[hajsoholik] ${expired.length} ofert po terminie — renderowane jako „Archiwalna", do odświeżenia: ${expired
+        .map((promo) => `${promo.id}:${promo.bank}:${promo.deadlineDate}`)
+        .join(', ')}`,
+    )
+  }
+  return expired.length
 }
 
 /**
