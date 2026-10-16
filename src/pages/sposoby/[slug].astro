@@ -1,0 +1,267 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { SIDEHUSTLES, type SideHustle } from '../../data/sidehustles'
+import { site } from '../../data/site'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+
+interface Props {
+  hustle: SideHustle
+  related: SideHustle[]
+}
+
+export const getStaticPaths = (() => {
+  return SIDEHUSTLES.map((hustle) => ({
+    params: { slug: hustle.seoSlug },
+    props: {
+      hustle,
+      related: SIDEHUSTLES.filter((h) => h.id !== hustle.id).slice(0, 3),
+    },
+  }))
+}) satisfies GetStaticPaths
+
+const { hustle, related } = Astro.props
+
+// SEO Title formula (zoptymalizowany pod SERP Google ≤ 62 znaki)
+const titleFull = `${hustle.platform}: ${hustle.earningsDisplay} — jak zarabiać (2026) | Hajsoholik`
+const titleShort = `${hustle.platform}: jak zarabiać (2026) | Hajsoholik`
+const pageTitle = titleFull.length <= 62 ? titleFull : titleShort
+
+// Meta description (145–158 znaków, intencja + dowód + CTA)
+const capitalText = hustle.capitalRequired === 0 ? '0 zł' : `${hustle.capitalRequired} zł`
+const pageDescription = `Jak zarabiać przez ${hustle.platform}? Szacowany zysk: ${hustle.earningsDisplay}, ROI ~${hustle.roiPerHour} zł/h, start: ${capitalText}. Sprawdź instrukcję krok po kroku i haczyki!`
+
+const jsonLd = [
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: `Jak zarabiać przez ${hustle.platform}: ${hustle.title}`,
+    description: hustle.description,
+    totalTime: `PT${hustle.timeMinutes}M`,
+    step: hustle.requirements.map((req, index) => ({
+      '@type': 'HowToStep',
+      position: index + 1,
+      name: `Krok ${index + 1}: ${req.slice(0, 40)}`,
+      text: req,
+      url: `${site.url}/sposoby/${hustle.seoSlug}#krok-${index + 1}`,
+    })),
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Hajsoholik',
+        item: site.url,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Sposoby na dorabianie',
+        item: `${site.url}/sposoby-na-dorabianie`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: hustle.platform,
+        item: `${site.url}/sposoby/${hustle.seoSlug}`,
+      },
+    ],
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: pageTitle,
+    description: pageDescription,
+    url: `${site.url}/sposoby/${hustle.seoSlug}`,
+    inLanguage: 'pl-PL',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: site.name,
+      url: site.url,
+    },
+  }),
+]
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  path={`/sposoby/${hustle.seoSlug}`}
+  jsonLd={jsonLd}
+  bodyClass="bg-[#F8F9FC]"
+  showFreshness
+>
+  <div class="max-w-4xl mx-auto px-4 md:px-6 py-8">
+    <!-- Breadcrumbs -->
+    <nav class="mb-6 flex items-center gap-2 text-xs text-zinc-500" aria-label="Nawigacja">
+      <a href="/" class="hover:text-zinc-900 transition">Strona główna</a>
+      <span>/</span>
+      <a href="/sposoby-na-dorabianie" class="hover:text-zinc-900 transition">Sposoby na dorabianie</a>
+      <span>/</span>
+      <span class="text-zinc-900 font-semibold truncate">{hustle.platform}</span>
+    </nav>
+
+    <!-- Karta główna przewodnika -->
+    <article class="bg-white rounded-3xl border border-zinc-200/90 p-6 md:p-10 shadow-xs">
+      <!-- Header -->
+      <div class="flex items-center gap-4 mb-6">
+        <div
+          class="w-16 h-16 rounded-2xl flex items-center justify-center font-extrabold text-xl shadow-xs select-none shrink-0"
+          style={{
+            backgroundColor: hustle.brandColor,
+            color: ['#FF90E8', '#00F0FF', '#F7A600'].includes(hustle.brandColor) ? '#09090b' : '#ffffff',
+          }}
+        >
+          {hustle.platformInitial}
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold text-zinc-500 uppercase tracking-wider">{hustle.category}</span>
+            <span class="text-xs text-zinc-300">•</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700">
+              {hustle.incomeTypeLabel}
+            </span>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-extrabold text-zinc-900 leading-tight">
+            {hustle.title}
+          </h1>
+        </div>
+      </div>
+
+      <!-- Kafelki metryk -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-zinc-50 rounded-2xl border border-zinc-200/70 mb-8">
+        <div>
+          <span class="block text-[11px] font-semibold text-zinc-500 uppercase">Szacowany zysk</span>
+          <span class="text-base font-bold text-zinc-900">{hustle.earningsDisplay}</span>
+        </div>
+        <div>
+          <span class="block text-[11px] font-semibold text-zinc-500 uppercase">ROI za godzinę</span>
+          <span class="text-base font-bold text-emerald-800">~{hustle.roiPerHour} zł/h</span>
+        </div>
+        <div>
+          <span class="block text-[11px] font-semibold text-zinc-500 uppercase">Wymagany kapitał</span>
+          <span class="text-base font-bold text-zinc-900">
+            {hustle.capitalRequired === 0 ? '0 zł' : `${hustle.capitalRequired} zł`}
+          </span>
+        </div>
+        <div>
+          <span class="block text-[11px] font-semibold text-zinc-500 uppercase">Poziom trudności</span>
+          <span class="text-base font-bold text-zinc-900">{hustle.difficulty}</span>
+        </div>
+      </div>
+
+      <!-- Opis modelu -->
+      <section class="prose prose-zinc max-w-none text-sm text-zinc-700 leading-relaxed mb-8">
+        <h2 class="text-lg font-bold text-zinc-900 mb-2">Na czym polega ta metoda?</h2>
+        <p>{hustle.description}</p>
+      </section>
+
+      <!-- Instrukcja krok po kroku -->
+      <section class="mb-8">
+        <h2 class="text-lg font-bold text-zinc-900 mb-4">Instrukcja wdrożenia krok po kroku</h2>
+        <div class="space-y-3">
+          {
+            hustle.requirements.map((req, index) => (
+              <div id={`krok-${index + 1}`} class="flex items-start gap-3.5 p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/80">
+                <span class="w-6 h-6 rounded-full bg-zinc-900 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  {index + 1}
+                </span>
+                <p class="text-xs md:text-sm text-zinc-800 font-medium leading-normal">{req}</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- Haczyki i ryzyka (Content Effort / YMYL) -->
+      {
+        hustle.haczyki.length > 0 && (
+          <section class="mb-8 p-5 rounded-2xl bg-amber-50/70 border border-amber-200/80">
+            <h2 class="text-sm font-bold text-amber-900 mb-2 flex items-center gap-2">
+              <span>⚠️</span> Haczyki, formalności podatkowe i na co uważać
+            </h2>
+            <ul class="list-disc list-inside text-xs text-amber-950 space-y-1.5 leading-relaxed">
+              {hustle.haczyki.map((haczyk) => (
+                <li>{haczyk}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      <!-- Metodologia wyliczeń ROI (Evidence of Work) -->
+      <section class="mb-8 p-5 rounded-2xl bg-zinc-50 border border-zinc-200/80 text-xs text-zinc-600 leading-relaxed">
+        <h2 class="font-bold text-zinc-900 mb-1 text-xs uppercase tracking-wider">
+          Metodologia weryfikacji i szacunku ROI
+        </h2>
+        <p>
+          Szacowane ROI (~{hustle.roiPerHour} zł/h) zostało obliczone na podstawie uśrednionych danych z forów r/WorkOnline, r/BeerMoney oraz stawek rynkowych w Polsce. Wzór: (szacowany zysk netto − koszt wejścia) ÷ czas wdrożenia w godzinach. Realne zarobki zależą od Twojej dyscypliny, popytu oraz ewentualnych zmian regulaminów platform zewnętrznych.
+        </p>
+      </section>
+
+      <!-- Przycisk CTA -->
+      <div class="pt-6 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <p class="text-xs text-zinc-500">
+            {hustle.hasAffiliateLink ? 'Oficjalny link rejestracyjny (z bonusem):' : 'Oficjalny adres platformy:'}
+          </p>
+        </div>
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <a
+            href={hustle.targetUrl}
+            target="_blank"
+            rel={hustle.hasAffiliateLink ? 'sponsored noopener' : 'noopener'}
+            class="w-full sm:w-auto px-6 py-3 rounded-xl bg-zinc-900 text-white text-sm font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 transition shadow-sm"
+          >
+            {hustle.hasAffiliateLink ? 'Odbierz bonus na platformie ↗' : `Odwiedź ${hustle.platform} ↗`}
+          </a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Sekcja E-E-A-T & YMYL Trust Disclaimer -->
+    <footer class="mt-8 bg-white rounded-2xl border border-zinc-200/80 p-5 text-xs text-zinc-500 space-y-2">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-zinc-100">
+        <span class="font-semibold text-zinc-700">
+          Opracowanie: Redakcja Hajsoholik.pl
+        </span>
+        <span class="text-zinc-400">
+          Weryfikacja: Październik 2026 • Wydawca: {site.publisher}
+        </span>
+      </div>
+      <p class="leading-relaxed">
+        <strong>Zastrzeżenie prawne i podatkowe (YMYL):</strong> Prezentowany materiał ma charakter wyłącznie informacyjno-edukacyjny. Nie stanowi porady inwestycyjnej, prawnej ani podatkowej w rozumieniu przepisów prawa. Przed podjęciem zarobkowania upewnij się co do bieżących przepisów (m.in. limit działalności nierejestrowanej w Polsce, podatek od czynności cywilnoprawnych PCC, dyrektywa DAC7). Serwis Hajsoholik nie gwarantuje uzyskania określonego zysku.
+      </p>
+    </footer>
+
+    <!-- Powiązane metody -->
+    {
+      related.length > 0 && (
+        <section class="mt-12">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-zinc-900">Zobacz inne metody zarabiania</h2>
+            <a href="/sposoby-na-dorabianie" class="text-xs font-semibold text-zinc-600 hover:text-zinc-900">
+              Wszystkie metody ({SIDEHUSTLES.length}) →
+            </a>
+          </div>
+          <div class="grid sm:grid-cols-3 gap-4">
+            {related.map((rel) => (
+              <a
+                href={`/sposoby/${rel.seoSlug}`}
+                class="block bg-white p-4 rounded-2xl border border-zinc-200/80 hover:border-zinc-300 hover:shadow-xs transition"
+              >
+                <span class="text-[11px] font-semibold text-zinc-500 uppercase">{rel.platform}</span>
+                <h3 class="text-xs font-bold text-zinc-900 mt-1 line-clamp-2">{rel.title}</h3>
+                <span class="text-xs text-emerald-800 font-semibold mt-2 inline-block">
+                  {rel.earningsDisplay}
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>

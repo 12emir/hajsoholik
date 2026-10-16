@@ -1,6 +1,7 @@
 import { getCollection } from 'astro:content'
 import type { APIRoute } from 'astro'
 import { PROMOTIONS, deadlineHuman, promoPath, statusOf } from '../data/promotions'
+import { SIDEHUSTLES } from '../data/sidehustles'
 import { site } from '../data/site'
 
 export const GET: APIRoute = async () => {
@@ -31,6 +32,11 @@ export const GET: APIRoute = async () => {
     .map((post) => `- [${post.data.title}](${site.url}/blog/${post.id}): ${post.data.description}`)
     .join('\n')
 
+  const sidehustleLines = SIDEHUSTLES.map(
+    (h) =>
+      `- [${h.platform} — ${h.title}](${site.url}/sposoby/${h.seoSlug}): zysk ${h.earningsDisplay} | ROI ~${h.roiPerHour} zł/h | start ${h.capitalRequired} zł | typ ${h.incomeTypeLabel}`,
+  ).join('\n')
+
   const body = `# Hajsoholik.pl
 
 > Najlepsze promocje bankowe w Polsce 2026 w jednym miejscu.
@@ -41,6 +47,9 @@ export const GET: APIRoute = async () => {
 
 ## Strona główna (listing + porównywarka)
 - [Promocje bankowe 2026](${site.url}/)
+
+## Biblioteka Sposobów Zarabiania (poza bankami)
+- [Sposoby na dorabianie 2026 — baza sprawdzonych metod](${site.url}/sposoby-na-dorabianie)
 
 ## Kategorie promocji (strony hubów)
 - [Konta osobiste](${site.url}/kategoria/konta-osobiste)
@@ -56,6 +65,9 @@ export const GET: APIRoute = async () => {
 - [Ranking kredytów gotówkowych 2026](${site.url}/kredyty-gotowkowe) — porównanie rat, prowizji i RRSO
 - [Ranking lokat bankowych 2026](${site.url}/lokaty-bankowe) — oprocentowanie i zysk netto
 - [Pożyczki pozabankowe i chwilówki 2026](${site.url}/pozyczki-chwilowki) — pierwsza za 0 zł, wypłata online
+
+## Sposoby na dorabianie (${SIDEHUSTLES.length} zweryfikowanych metod)
+${sidehustleLines}
 
 ## Oferty (${activePromos.length} — dane do porównania programowego)
 ${offerLines}

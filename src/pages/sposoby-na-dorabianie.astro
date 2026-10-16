@@ -1,0 +1,225 @@
+---
+import { SidehustleDirectory } from '../components/sidehustle/SidehustleDirectory'
+import { SIDEHUSTLES } from '../data/sidehustles'
+import { site } from '../data/site'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const title = 'Sposoby na dorabianie 2026: Baza metod poza bankami | Hajsoholik'
+const description =
+  'Kompletna biblioteka legalnych sposobów na dorabianie w Polsce: od 0 zł na start, produkty cyfrowe, testowanie stron, vending, agencja AI i zlecenia. Zestawienie z ROI/h i kapitałem.'
+
+const faq = [
+  {
+    q: 'Czym różnią się sposoby na dorabianie od promocji bankowych?',
+    a: 'Promocje bankowe to jednorazowe premie gotówkowe (200–1000 zł) za założenie konta lub karty. Sposoby na dorabianie w naszej bibliotece to powtarzalne modele biznesowe (produkty cyfrowe, mikrozadania, vending, usługi lokalne, agencja AI), które pozwalają budować stały strumień przychodu (MRR) lub zarabiać na czysto bez pośredników.',
+  },
+  {
+    q: 'Od czego najlepiej zacząć bez kapitału (0 zł)?',
+    a: 'Jeśli nie masz budżetu startowego, najlepszym wyborem są modele zamieniające czas na gotówkę: płatne ankiety akademickie na Prolific (30–60 zł/h na PayPal), testowanie aplikacji na UserTesting (10$ za 15 min), sprzedaż nieużywanych rzeczy na Vinted lub tworzenie bezpłatnych szablonów Notion w oparciu o darmowe narzędzia.',
+  },
+  {
+    q: 'Czym jest dochód pasywny w bibliotece Hajsoholika?',
+    a: 'Wzorujemy się na klasyfikacji IRS: dochód pasywny to zysk generowany z aktywów bez stałego zaangażowania Twojego czasu roboczego. W bibliotece są to m.in. automaty vendingowe, wynajem miejsc parkingowych, produkty cyfrowe (szablony Notion, plannery Etsy) oraz aplikacje w modelu Micro-SaaS.',
+  },
+  {
+    q: 'Dlaczego część ofert ma bonusy, a inne są bezpłatnymi poradnikami?',
+    a: 'Oferty na samej górze (np. giełdy i fintechy) posiadają aktywne premie powitalne i programy partnerskie. Pozostałe pozycje to w 100% niezależne modele, w których pokazujemy bezpośrednie instrukcje krok po kroku i odnośniki do platform bez żadnych prowizji pośredników.',
+  },
+]
+
+const jsonLd = [
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: title,
+    description: description,
+    url: `${site.url}/sposoby-na-dorabianie`,
+    inLanguage: 'pl-PL',
+    isPartOf: { '@type': 'WebSite', name: site.name, url: site.url },
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Hajsoholik',
+        item: site.url,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Sposoby na dorabianie',
+        item: `${site.url}/sposoby-na-dorabianie`,
+      },
+    ],
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  }),
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Sposoby na dorabianie 2026',
+    description: description,
+    numberOfItems: SIDEHUSTLES.length,
+    itemListElement: SIDEHUSTLES.map((hustle, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: hustle.title,
+      description: hustle.description,
+      url: `${site.url}/sposoby/${hustle.seoSlug}`,
+    })),
+  }),
+]
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/sposoby-na-dorabianie"
+  jsonLd={jsonLd}
+  bodyClass="bg-[#F8F9FC]"
+  showFreshness
+>
+  <div class="max-w-[1480px] mx-auto px-4 md:px-6 py-8">
+    <!-- Breadcrumbs -->
+    <nav class="mb-6 flex items-center gap-2 text-xs text-zinc-500" aria-label="Ścieżka nawigacji">
+      <a href="/" class="hover:text-zinc-900 transition">Strona główna</a>
+      <span>/</span>
+      <span class="text-zinc-900 font-semibold">Sposoby na dorabianie</span>
+    </nav>
+
+    <!-- Header sekcji -->
+    <header class="mb-8 pb-6 border-b border-black/[0.06]">
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/70">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Raport rynkowy 2024–2026
+        </span>
+        <span class="text-xs font-medium text-zinc-500">
+          • {SIDEHUSTLES.length} zweryfikowanych modeli dorabiania
+        </span>
+      </div>
+
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900">
+        Biblioteka Sposobów Zarabiania 2026
+      </h1>
+      <p class="mt-2.5 max-w-3xl text-sm md:text-base text-zinc-600 leading-relaxed">
+        Sprawdzone metody na dodatkowy dochód poza promocjami bankowymi: od zarabiania 0 zł na start (ankiety naukowe, reselling, testowanie stron) po dochód pasywny (produkty cyfrowe, automaty vendingowe, Micro-SaaS i agencja AI).
+      </p>
+
+      <!-- Kluczowe filary -->
+      <div class="grid sm:grid-cols-3 gap-3 mt-6 pt-4 border-t border-zinc-200/60">
+        <div class="bg-white rounded-xl p-3.5 border border-zinc-200/80 shadow-2xs">
+          <span class="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block mb-0.5">
+            1. Zero bariery wejścia
+          </span>
+          <p class="text-xs text-zinc-600">
+            Aż 6 modeli z listy nie wymaga ani grosza kapitału na start — wystarczy telefon lub komputer.
+          </p>
+        </div>
+        <div class="bg-white rounded-xl p-3.5 border border-zinc-200/80 shadow-2xs">
+          <span class="text-[11px] font-bold text-indigo-800 uppercase tracking-wider block mb-0.5">
+            2. Realne ROI za godzinę
+          </span>
+          <p class="text-xs text-zinc-600">
+            Koniec z klikaniem w groszowe reklamy. Podajemy szacowany zysk netto w przeliczeniu na godzinę pracy.
+          </p>
+        </div>
+        <div class="bg-white rounded-xl p-3.5 border border-zinc-200/80 shadow-2xs">
+          <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider block mb-0.5">
+            3. Dochód pasywny & MRR
+          </span>
+          <p class="text-xs text-zinc-600">
+            Od maszyn vendingowych po szablony cyfrowe — modele, które generują gotówkę, gdy śpisz.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Główny katalog interaktywny -->
+    <SidehustleDirectory client:load />
+
+    <!-- Sekcja E-E-A-T: Fundament 3 typów dochodu wg IRS -->
+    <section class="mt-14 bg-white rounded-2xl border border-zinc-200/90 p-6 md:p-8 shadow-xs">
+      <h2 class="text-lg md:text-xl font-bold text-zinc-900 mb-3">
+        Jak zbudować stabilny portfel przychodów: 3 koszyki dochodu
+      </h2>
+      <p class="text-xs md:text-sm text-zinc-600 leading-relaxed max-w-4xl mb-6">
+        Zgodnie z taksonomią rynkową i klasyfikacją dochodów IRS, najbardziej odporne finansowo portfele nie opierają się na jednym etacie, lecz łączą trzy niezależne strumienie:
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-zinc-50 rounded-xl p-4 border border-zinc-200/70">
+          <h3 class="font-bold text-sm text-zinc-900 mb-1 flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            Dochód Aktywny (Active)
+          </h3>
+          <p class="text-xs text-zinc-600 leading-relaxed">
+            Zamieniasz swój czas bezpośrednio na pieniądze (np. testowanie aplikacji UserTesting, badanie Prolific, mobilne mycie aut). Zaletą jest natychmiastowy start od 0 zł i brak ryzyka inwestycyjnego.
+          </p>
+        </div>
+
+        <div class="bg-zinc-50 rounded-xl p-4 border border-zinc-200/70">
+          <h3 class="font-bold text-sm text-zinc-900 mb-1 flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+            Dochód Pasywny (Passive Activity)
+          </h3>
+          <p class="text-xs text-zinc-600 leading-relaxed">
+            Przychód z wcześniej zbudowanego aktywa cyfrowego lub fizycznego (szablony Notion, plannery Etsy, automaty vendingowe, wynajem parkingu). Generuje powtarzalny zysk (MRR) bez Twojej ciągłej obecności.
+          </p>
+        </div>
+
+        <div class="bg-zinc-50 rounded-xl p-4 border border-zinc-200/70">
+          <h3 class="font-bold text-sm text-zinc-900 mb-1 flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            Dochód Portfelowy (Portfolio)
+          </h3>
+          <p class="text-xs text-zinc-600 leading-relaxed">
+            Pomnażanie nadwyżek kapitałowych wypracowanych z pracy aktywnej i pasywnej: bonusy giełdowe (Bitget, Bybit), staking, dywidendy oraz lokaty bankowe.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="mt-8 bg-white rounded-2xl border border-zinc-200/90 p-6 md:p-8 shadow-xs">
+      <h2 class="text-lg md:text-xl font-bold text-zinc-900 mb-4">
+        Najczęściej zadawane pytania (FAQ)
+      </h2>
+      <div class="space-y-4">
+        {
+          faq.map((item) => (
+            <div class="pt-3 border-t border-zinc-100 first:border-0 first:pt-0">
+              <h3 class="text-sm font-semibold text-zinc-900 mb-1">{item.q}</h3>
+              <p class="text-xs text-zinc-600 leading-relaxed">{item.a}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Stopka E-E-A-T & YMYL Disclaimer -->
+    <footer class="mt-8 bg-white rounded-2xl border border-zinc-200/80 p-5 md:p-6 text-xs text-zinc-500 space-y-2.5">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-zinc-100">
+        <span class="font-semibold text-zinc-700">
+          Metodologia i redakcja: Zespół analityczny Hajsoholik.pl
+        </span>
+        <span class="text-zinc-400">
+          Stan na: Październik 2026 • Wydawca: {site.publisher}
+        </span>
+      </div>
+      <p class="leading-relaxed">
+        <strong>Zastrzeżenie prawne i podatkowe (YMYL):</strong> Serwis Hajsoholik.pl prezentuje subiektywne zestawienie modeli zarobkowych oparte na publicznych regulaminach platform, danych rynkowych i społecznościowych (m.in. r/WorkOnline, r/BeerMoney). Żadna treść nie stanowi rekomendacji inwestycyjnej ani porady podatkowej. Prowadzenie działalności zarobkowej w Polsce wiąże się z obowiązkami prawnymi (np. limit przychodów działalności nierejestrowanej, ewidencja sprzedaży, podatki dochodowe). Zawsze weryfikuj aktualne przepisy urzędowe.
+      </p>
+    </footer>
+  </div>
+</BaseLayout>

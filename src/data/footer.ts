@@ -13,6 +13,7 @@ export const footerCategories = [
 
 export const footerService = [
   { label: 'Wszystkie promocje', href: '/' },
+  { label: 'Sposoby na dorabianie', href: '/sposoby-na-dorabianie' },
   { label: 'Kończące się', href: '/konczace-sie' },
   { label: 'Kontakt', href: '/kontakt' },
   { label: 'Informacje dla AI', href: '/llms.txt' },
